@@ -36,7 +36,7 @@ dist/ShelfDrop-macos.zip
 
 Send that zip to another Mac, unzip it, and open `ShelfDrop.app`.
 
-With full Xcode installed, the package script builds a universal app for Apple Silicon and Intel Macs. With only Xcode Command Line Tools installed, it falls back to the current Mac architecture.
+With full Xcode installed, the package script builds a universal app for Apple Silicon and Intel Macs. With only Xcode Command Line Tools installed, it falls back to the current Mac architecture. GitHub Release builds force the universal path.
 
 Because this build is ad hoc signed and not notarized, macOS Gatekeeper may block the first launch. Use Finder's context menu:
 

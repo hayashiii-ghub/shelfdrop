@@ -17,7 +17,17 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Select full Xcode if available
+        run: |
+          XCODE_APP="$(ls -d /Applications/Xcode*.app 2>/dev/null | sort | tail -n 1 || true)"
+          if [ -n "$XCODE_APP" ]; then
+            sudo xcode-select -s "$XCODE_APP/Contents/Developer"
+          fi
+          xcode-select -p
+
       - name: Build distributable zip
+        env:
+          SHELFDROP_UNIVERSAL: "1"
         run: ./script/package.sh
 
       - name: Upload workflow artifact

@@ -22,8 +22,12 @@ cd "$ROOT_DIR"
 
 DEVELOPER_DIR_PATH="$(xcode-select -p 2>/dev/null || true)"
 XCBUILD_PATH="$(dirname "$DEVELOPER_DIR_PATH")/SharedFrameworks/XCBuild.framework/Versions/A/Support/xcbuild"
+UNIVERSAL_MODE="${SHELFDROP_UNIVERSAL:-auto}"
 
-if [[ -x "$XCBUILD_PATH" ]]; then
+if [[ "$UNIVERSAL_MODE" == "1" || "$UNIVERSAL_MODE" == "true" ]]; then
+  SWIFT_BUILD_FLAGS=(-c release --arch arm64 --arch x86_64 --cache-path "$SWIFTPM_CACHE_DIR")
+  BUILD_KIND="universal"
+elif [[ -x "$XCBUILD_PATH" ]]; then
   SWIFT_BUILD_FLAGS=(-c release --arch arm64 --arch x86_64 --cache-path "$SWIFTPM_CACHE_DIR")
   BUILD_KIND="universal"
 else
