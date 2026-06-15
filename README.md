@@ -1,68 +1,76 @@
 # ShelfDrop
 
-ShelfDrop is a small macOS shelf app inspired by Dropover. It opens a floating shelf while dragging files so items can be temporarily parked, moved, copied, zipped, or dragged back out.
+ShelfDrop は、Dropover のように使える小さな macOS 用シェルフアプリです。ファイルをドラッグしている時だけフローティングの棚を開き、ファイルやフォルダを一時的に置いたり、コピー、移動、ZIP 化、再ドラッグできます。
 
-## Requirements
+## 動作環境
 
-- macOS 14 or later
+- macOS 14 以降
 - Xcode Command Line Tools
-- Swift 5.9 or later
+- Swift 5.9 以降
 
-## Build And Run
+## ビルドして起動
 
 ```sh
 ./script/build_and_run.sh
 ```
 
-The script builds the SwiftPM target, stages `dist/ShelfDrop.app`, stops any running ShelfDrop process, and launches the fresh app bundle.
+このスクリプトは SwiftPM ターゲットをビルドし、`dist/ShelfDrop.app` を作成して、起動中の ShelfDrop を停止した上で新しいアプリを起動します。
 
-For a compile-only check:
+コンパイルだけ確認する場合:
 
 ```sh
 swift build
 ```
 
-## Package For Another Mac
+## 別の Mac で使う
 
-```sh
-./script/package.sh
-```
+GitHub Releases から `ShelfDrop-macos.zip` をダウンロードしてください。
 
-This creates:
+[最新版をダウンロード](https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/ShelfDrop-macos.zip)
 
-```text
-dist/ShelfDrop-macos.zip
-```
+ダウンロードした zip を展開し、`ShelfDrop.app` を開きます。
 
-Send that zip to another Mac, unzip it, and open `ShelfDrop.app`.
+GitHub Release のビルドは Apple Silicon Mac と Intel Mac の両方に対応した universal アプリです。
 
-With full Xcode installed, the package script builds a universal app for Apple Silicon and Intel Macs. With only Xcode Command Line Tools installed, it falls back to the current Mac architecture. GitHub Release builds force the universal path.
+このアプリは Apple Developer ID での署名や notarization をしていないため、初回起動時に macOS Gatekeeper に止められることがあります。その場合は Finder で次の手順を使ってください。
 
-Because this build is ad hoc signed and not notarized, macOS Gatekeeper may block the first launch. Use Finder's context menu:
+1. `ShelfDrop.app` を Control キーを押しながらクリックします。
+2. `開く` を選びます。
+3. 警告ダイアログでもう一度 `開く` を選びます。
 
-1. Control-click `ShelfDrop.app`.
-2. Choose `Open`.
-3. Choose `Open` again in the warning dialog.
-
-If macOS still says the app is damaged because it came from the internet, remove the quarantine flag:
+それでも「壊れているため開けません」のように表示される場合は、quarantine 属性を削除します。
 
 ```sh
 xattr -dr com.apple.quarantine /Applications/ShelfDrop.app
 ```
 
-Use the actual app path if it is not in `/Applications`.
+`/Applications` 以外に置いた場合は、実際のアプリのパスに置き換えてください。
 
-## GitHub Release Build
-
-Pushing a version tag builds and uploads `ShelfDrop-macos.zip` to GitHub Releases:
+## 配布用 zip をローカルで作る
 
 ```sh
-git tag v0.1.0
-git push origin v0.1.0
+./script/package.sh
 ```
 
-## Notes
+作成されるファイル:
 
-- The shelf only opens from file drag activity, not ordinary cursor shaking.
-- The shelf can be moved by dragging the header area without a preparatory click.
-- Generated build output is ignored through `.gitignore`.
+```text
+dist/ShelfDrop-macos.zip
+```
+
+フル版 Xcode が入っている環境では、Apple Silicon Mac と Intel Mac の両方に対応した universal アプリを作成します。Xcode Command Line Tools だけの環境では、その Mac のアーキテクチャ向けに作成します。
+
+## GitHub Release を作る
+
+バージョンタグを push すると、GitHub Actions が `ShelfDrop-macos.zip` をビルドして GitHub Releases にアップロードします。
+
+```sh
+git tag v0.1.1
+git push origin v0.1.1
+```
+
+## メモ
+
+- 棚はファイルのドラッグ中だけ開きます。通常のカーソル操作やシェイクでは開きません。
+- ヘッダー部分をドラッグすると、事前クリックなしで棚を移動できます。
+- `.gitignore` により、ビルド生成物は Git 管理から除外しています。
