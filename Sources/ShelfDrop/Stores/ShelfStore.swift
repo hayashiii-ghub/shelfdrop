@@ -3,16 +3,26 @@ import Foundation
 import UniformTypeIdentifiers
 
 final class ShelfStore: ObservableObject {
+    private static let imageDataTypeIdentifiers = [
+        UTType.png.identifier,
+        UTType.tiff.identifier,
+        "public.jpeg",
+        "com.compuserve.gif",
+        "public.heic",
+        "public.heif",
+        "public.svg-image",
+        "com.adobe.svg",
+        "org.webmproject.webp"
+    ]
+
     static let acceptedTypeIdentifiers = [
         UTType.fileURL.identifier,
         UTType.url.identifier,
         UTType.plainText.identifier,
         UTType.text.identifier,
         UTType.utf8PlainText.identifier,
-        UTType.png.identifier,
-        UTType.tiff.identifier,
         UTType.image.identifier
-    ]
+    ] + imageDataTypeIdentifiers
 
     @Published var items: [ShelfItem] = []
 
@@ -125,6 +135,17 @@ final class ShelfStore: ObservableObject {
             return
         }
 
+        let imageTypes = Self.imageDataTypeIdentifiers + [UTType.image.identifier]
+        if let typeIdentifier = imageTypes.first(where: { provider.hasItemConformingToTypeIdentifier($0) }) {
+            provider.loadDataRepresentation(forTypeIdentifier: typeIdentifier) { data, _ in
+                guard let data else { return }
+                Task { @MainActor in
+                    self.addImageData(data, typeIdentifier: typeIdentifier)
+                }
+            }
+            return
+        }
+
         if provider.hasItemConformingToTypeIdentifier(UTType.plainText.identifier) ||
             provider.hasItemConformingToTypeIdentifier(UTType.text.identifier) ||
             provider.hasItemConformingToTypeIdentifier(UTType.utf8PlainText.identifier) {
@@ -135,16 +156,6 @@ final class ShelfStore: ObservableObject {
                 }
             }
             return
-        }
-
-        let imageTypes = [UTType.png.identifier, UTType.tiff.identifier, UTType.image.identifier]
-        if let typeIdentifier = imageTypes.first(where: { provider.hasItemConformingToTypeIdentifier($0) }) {
-            provider.loadDataRepresentation(forTypeIdentifier: typeIdentifier) { data, _ in
-                guard let data else { return }
-                Task { @MainActor in
-                    self.addImageData(data, typeIdentifier: typeIdentifier)
-                }
-            }
         }
     }
 
@@ -186,7 +197,7 @@ final class ShelfStore: ObservableObject {
 
     private func addImageData(_ data: Data, typeIdentifier: String) {
         do {
-            let fileExtension = typeIdentifier == UTType.tiff.identifier ? "tiff" : "png"
+            let fileExtension = Self.fileExtension(for: typeIdentifier)
             let directory = try fileActions.inboxDirectory()
             let url = directory.appendingPathComponent("Image-\(Date().compactTimestamp()).\(fileExtension)")
             try data.write(to: url, options: .atomic)
@@ -200,6 +211,27 @@ final class ShelfStore: ObservableObject {
             )
         } catch {
             present(error)
+        }
+    }
+
+    private static func fileExtension(for typeIdentifier: String) -> String {
+        switch typeIdentifier {
+        case UTType.tiff.identifier:
+            return "tiff"
+        case "public.jpeg":
+            return "jpg"
+        case "com.compuserve.gif":
+            return "gif"
+        case "public.heic":
+            return "heic"
+        case "public.heif":
+            return "heif"
+        case "public.svg-image", "com.adobe.svg":
+            return "svg"
+        case "org.webmproject.webp":
+            return "webp"
+        default:
+            return "png"
         }
     }
 
