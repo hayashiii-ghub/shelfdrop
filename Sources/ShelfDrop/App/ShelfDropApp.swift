@@ -3,6 +3,12 @@ import AppKit
 @main
 final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private static let shared = ShelfDropApplication()
+    private static let latestDownloadURL = URL(
+        string: "https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/ShelfDrop-macos.zip"
+    )!
+    private static let releasesURL = URL(
+        string: "https://github.com/hayashiii-ghub/shelfdrop/releases/latest"
+    )!
 
     private let store = ShelfStore()
     private lazy var shelfWindowController = ShelfWindowController(store: store)
@@ -87,6 +93,10 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         menu.addItem(clearItem)
 
         menu.addItem(.separator())
+        menu.addItem(NSMenuItem(title: "Download Latest Version...", action: #selector(downloadLatestVersion), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Open Release Page", action: #selector(openReleasePage), keyEquivalent: ""))
+
+        menu.addItem(.separator())
         menu.addItem(NSMenuItem(title: "Quit ShelfDrop", action: #selector(quit), keyEquivalent: "q"))
 
         for item in menu.items where item.action != nil {
@@ -120,6 +130,14 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
     @objc private func toggleShakeDetection() {
         let defaults = UserDefaults.standard
         defaults.set(!defaults.bool(forKey: "shakeDetectionEnabled"), forKey: "shakeDetectionEnabled")
+    }
+
+    @objc private func downloadLatestVersion() {
+        NSWorkspace.shared.open(Self.latestDownloadURL)
+    }
+
+    @objc private func openReleasePage() {
+        NSWorkspace.shared.open(Self.releasesURL)
     }
 
     @objc private func quit() {

@@ -76,6 +76,18 @@ xattr -dr com.apple.quarantine /Applications/ShelfDrop.app
 
 `/Applications` 以外に置いた場合は、実際のアプリのパスに置き換えてください。
 
+## 更新する
+
+すでに ShelfDrop を入れている Mac では、次のコマンドで最新版をダウンロードして入れ替えできます。
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/hayashiii-ghub/shelfdrop/main/script/install_latest.sh | bash
+```
+
+既存の `ShelfDrop.app` が `/Applications` にある場合は、そこに上書きします。`~/Applications` にある場合は、そちらを更新します。どちらにもない場合は、書き込み可能なら `/Applications`、そうでなければ `~/Applications` にインストールします。
+
+アプリのメニューバーから `Download Latest Version...` を選ぶと、最新版 zip のダウンロードも開始できます。
+
 ## 配布用 zip をローカルで作る
 
 ```sh
@@ -95,8 +107,8 @@ dist/ShelfDrop-macos.zip
 バージョンタグを push すると、GitHub Actions が `ShelfDrop-macos.zip` をビルドして GitHub Releases にアップロードします。
 
 ```sh
-git tag v0.1.1
-git push origin v0.1.1
+git tag v0.1.3
+git push origin v0.1.3
 ```
 
 ## メモ
