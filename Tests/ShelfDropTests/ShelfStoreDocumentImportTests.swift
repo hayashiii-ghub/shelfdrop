@@ -1,10 +1,10 @@
 import AppKit
-import XCTest
+import Testing
 @testable import ShelfDrop
 
 @MainActor
-final class ShelfStoreDocumentImportTests: XCTestCase {
-    func testImportsMarkdownDataAsFile() async throws {
+struct ShelfStoreDocumentImportTests {
+    @Test func importsMarkdownDataAsFile() async throws {
         try await assertDocumentImport(
             typeIdentifier: "net.daringfireball.markdown",
             suggestedName: "notes.md",
@@ -13,7 +13,7 @@ final class ShelfStoreDocumentImportTests: XCTestCase {
         )
     }
 
-    func testImportsHTMLDataAsFile() async throws {
+    @Test func importsHTMLDataAsFile() async throws {
         try await assertDocumentImport(
             typeIdentifier: "public.html",
             suggestedName: "page.html",
@@ -42,15 +42,15 @@ final class ShelfStoreDocumentImportTests: XCTestCase {
         store.importItems(from: [provider])
         let item = try await waitForImportedItem(in: store)
 
-        XCTAssertEqual(item.kind, .file)
-        XCTAssertEqual(item.url?.pathExtension, expectedExtension)
-        XCTAssertEqual(item.title, suggestedName)
+        #expect(item.kind == .file)
+        #expect(item.url?.pathExtension == expectedExtension)
+        #expect(item.title == suggestedName)
 
-        let url = try XCTUnwrap(item.url)
+        let url = try #require(item.url)
         defer {
             try? FileManager.default.removeItem(at: url)
         }
-        XCTAssertEqual(try String(contentsOf: url, encoding: .utf8), contents)
+        #expect(try String(contentsOf: url, encoding: .utf8) == contents)
     }
 
     private func waitForImportedItem(in store: ShelfStore) async throws -> ShelfItem {

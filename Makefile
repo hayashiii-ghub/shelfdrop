@@ -6,8 +6,8 @@ build:
 	swift build
 
 check:
-	swift test
-	bash -n script/build_and_run.sh script/package.sh script/install_latest.sh
+	./script/test.sh
+	bash -n script/build_and_run.sh script/package.sh script/install_latest.sh script/test.sh
 
 run:
 	./script/build_and_run.sh

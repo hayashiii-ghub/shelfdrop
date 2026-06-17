@@ -2,7 +2,9 @@ import AppKit
 
 @main
 final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegate {
+    private static let bundleIdentifier = "work.hayashigoto.ShelfDrop"
     private static let shared = ShelfDropApplication()
+    private static var singleInstanceGuard: SingleInstanceGuard?
     private static let latestDownloadURL = URL(
         string: "https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/ShelfDrop-macos.zip"
     )!
@@ -21,10 +23,33 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
     private var shakeMenuItem: NSMenuItem?
 
     static func main() {
+        guard let instanceGuard = SingleInstanceGuard(identifier: bundleIdentifier) else {
+            activateRunningInstance()
+            return
+        }
+        singleInstanceGuard = instanceGuard
+
         let app = NSApplication.shared
         app.setActivationPolicy(.accessory)
         app.delegate = shared
+        terminateLegacyInstances()
         app.run()
+    }
+
+    private static func activateRunningInstance() {
+        let runningInstance = NSWorkspace.shared.runningApplications.first {
+            $0.bundleIdentifier == bundleIdentifier
+        }
+        runningInstance?.activate(options: [])
+    }
+
+    private static func terminateLegacyInstances() {
+        let currentProcessIdentifier = ProcessInfo.processInfo.processIdentifier
+        for application in NSWorkspace.shared.runningApplications where
+            application.processIdentifier != currentProcessIdentifier
+            && (application.bundleIdentifier == bundleIdentifier || application.localizedName == "ShelfDrop") {
+            application.terminate()
+        }
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
