@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ShelfItemRow: View {
-    @Binding var item: ShelfItem
+    let item: ShelfItem
     let onOpen: () -> Void
     let onReveal: () -> Void
     let onCopy: () -> Void
@@ -16,9 +16,10 @@ struct ShelfItemRow: View {
                 .background(iconColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
 
             VStack(alignment: .leading, spacing: 3) {
-                TextField("Name", text: $item.title)
-                    .textFieldStyle(.plain)
+                Text(item.displayTitle)
                     .font(.system(size: 13, weight: .semibold))
+                    .lineLimit(1)
+                    .truncationMode(.middle)
 
                 Text(item.detail)
                     .font(.caption)

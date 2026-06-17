@@ -6,10 +6,20 @@ struct ActionBar: View {
     var body: some View {
         HStack(spacing: 8) {
             Button {
-                store.copyItemsToChosenFolder()
+                store.exportAllItemsToChosenFolder()
             } label: {
-                Label("Copy", systemImage: "doc.on.doc")
+                if store.isExporting {
+                    HStack(spacing: 5) {
+                        ProgressView()
+                            .controlSize(.small)
+                        Text("Exporting")
+                    }
+                } else {
+                    Label("Export All...", systemImage: "tray.and.arrow.up")
+                }
             }
+            .labelStyle(.titleAndIcon)
+            .help("Export all items to a folder")
 
             Button {
                 store.moveItemsToChosenFolder()
@@ -36,6 +46,6 @@ struct ActionBar: View {
         .labelStyle(.iconOnly)
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .disabled(store.items.isEmpty)
+        .disabled(store.items.isEmpty || store.isExporting)
     }
 }

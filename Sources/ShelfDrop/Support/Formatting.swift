@@ -69,7 +69,19 @@ extension URL {
 }
 
 extension ShelfItem {
+    var displayTitle: String {
+        if kind == .file || kind == .folder || kind == .image {
+            return url?.lastPathComponent ?? title
+        }
+
+        return title
+    }
+
     func preferredFileName(fallback: String) -> String {
+        if kind == .file || kind == .folder || kind == .image {
+            return url?.lastPathComponent.sanitizedFileName(defaultName: fallback) ?? fallback
+        }
+
         let cleanedTitle = title.sanitizedFileName(defaultName: fallback)
         guard let sourceExtension = url?.pathExtension, !sourceExtension.isEmpty else {
             return cleanedTitle

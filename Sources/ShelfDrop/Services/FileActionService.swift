@@ -1,9 +1,19 @@
 import AppKit
 import Foundation
 
-enum FileActionMode {
+enum FileActionMode: Sendable {
     case copy
     case move
+}
+
+struct FileExportFailure: Sendable {
+    let itemTitle: String
+    let message: String
+}
+
+struct FileExportResult: Sendable {
+    let exportedURLs: [URL]
+    let failures: [FileExportFailure]
 }
 
 struct FileActionService {
@@ -38,8 +48,28 @@ struct FileActionService {
 
     func export(items: [ShelfItem], to destination: URL, mode: FileActionMode) throws {
         for item in items {
-            try export(item: item, to: destination, mode: mode)
+            _ = try export(item: item, to: destination, mode: mode)
         }
+    }
+
+    func exportAll(items: [ShelfItem], to destination: URL, mode: FileActionMode) -> FileExportResult {
+        var exportedURLs: [URL] = []
+        var failures: [FileExportFailure] = []
+
+        for item in items {
+            do {
+                exportedURLs.append(try export(item: item, to: destination, mode: mode))
+            } catch {
+                failures.append(
+                    FileExportFailure(
+                        itemTitle: item.displayTitle,
+                        message: error.localizedDescription
+                    )
+                )
+            }
+        }
+
+        return FileExportResult(exportedURLs: exportedURLs, failures: failures)
     }
 
     func createZip(from items: [ShelfItem], destination: URL) throws {
@@ -76,10 +106,12 @@ struct FileActionService {
         }
     }
 
-    private func export(item: ShelfItem, to destination: URL, mode: FileActionMode) throws {
+    private func export(item: ShelfItem, to destination: URL, mode: FileActionMode) throws -> URL {
         switch item.kind {
         case .file, .folder, .image:
-            guard let source = item.url else { return }
+            guard let source = item.url else {
+                throw CocoaError(.fileNoSuchFile)
+            }
             let target = destination.availableChildURL(named: item.preferredFileName(fallback: source.lastPathComponent))
             switch mode {
             case .copy:
@@ -91,14 +123,17 @@ struct FileActionService {
                     try FileManager.default.moveItem(at: source, to: target)
                 }
             }
+            return target
         case .link:
             let name = item.title.sanitizedFileName(defaultName: "Link") + ".url.txt"
             let target = destination.availableChildURL(named: name)
             try (item.url?.absoluteString ?? item.text ?? "").write(to: target, atomically: true, encoding: .utf8)
+            return target
         case .text:
             let name = item.title.sanitizedFileName(defaultName: "Text") + ".txt"
             let target = destination.availableChildURL(named: name)
             try (item.text ?? "").write(to: target, atomically: true, encoding: .utf8)
+            return target
         }
     }
 }

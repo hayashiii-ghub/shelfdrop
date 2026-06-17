@@ -1,6 +1,6 @@
 import Foundation
 
-enum ShelfItemKind: String, Codable, CaseIterable {
+enum ShelfItemKind: String, Codable, CaseIterable, Sendable {
     case file
     case folder
     case link
@@ -23,7 +23,7 @@ enum ShelfItemKind: String, Codable, CaseIterable {
     }
 }
 
-struct ShelfItem: Identifiable, Codable, Equatable {
+struct ShelfItem: Identifiable, Codable, Equatable, Sendable {
     var id: UUID
     var kind: ShelfItemKind
     var title: String

@@ -24,7 +24,7 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
     private var shakeDetector: ShakeDetector?
     private var addFinderSelectionHotKey: GlobalHotKey?
     private var statusItem: NSStatusItem?
-    private var copyMenuItem: NSMenuItem?
+    private var exportMenuItem: NSMenuItem?
     private var moveMenuItem: NSMenuItem?
     private var zipMenuItem: NSMenuItem?
     private var clearMenuItem: NSMenuItem?
@@ -98,10 +98,11 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
 
     func menuWillOpen(_ menu: NSMenu) {
         let hasItems = !store.items.isEmpty
-        copyMenuItem?.isEnabled = hasItems
-        moveMenuItem?.isEnabled = hasItems
-        zipMenuItem?.isEnabled = hasItems
-        clearMenuItem?.isEnabled = hasItems
+        let canManageItems = hasItems && !store.isExporting
+        exportMenuItem?.isEnabled = canManageItems
+        moveMenuItem?.isEnabled = canManageItems
+        zipMenuItem?.isEnabled = canManageItems
+        clearMenuItem?.isEnabled = canManageItems
         shakeMenuItem?.state = UserDefaults.standard.bool(forKey: "shakeDetectionEnabled") ? .on : .off
     }
 
@@ -123,13 +124,13 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         menu.addItem(NSMenuItem(title: "Show Shelf", action: #selector(showShelf), keyEquivalent: ""))
         menu.addItem(.separator())
 
-        let copyItem = NSMenuItem(title: "Copy Items To...", action: #selector(copyItems), keyEquivalent: "")
+        let exportItem = NSMenuItem(title: "Export All...", action: #selector(exportItems), keyEquivalent: "")
         let moveItem = NSMenuItem(title: "Move Items To...", action: #selector(moveItems), keyEquivalent: "")
         let zipItem = NSMenuItem(title: "Create ZIP...", action: #selector(createZip), keyEquivalent: "")
-        copyMenuItem = copyItem
+        exportMenuItem = exportItem
         moveMenuItem = moveItem
         zipMenuItem = zipItem
-        menu.addItem(copyItem)
+        menu.addItem(exportItem)
         menu.addItem(moveItem)
         menu.addItem(zipItem)
 
@@ -214,8 +215,8 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         }
     }
 
-    @objc private func copyItems() {
-        store.copyItemsToChosenFolder()
+    @objc private func exportItems() {
+        store.exportAllItemsToChosenFolder()
     }
 
     @objc private func moveItems() {

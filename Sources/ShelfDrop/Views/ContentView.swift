@@ -43,9 +43,9 @@ struct ContentView: View {
     private var itemList: some View {
         ScrollView {
             LazyVStack(spacing: 8) {
-                ForEach($store.items) { $item in
+                ForEach(store.items) { item in
                     ShelfItemRow(
-                        item: $item,
+                        item: item,
                         onOpen: { store.open(item) },
                         onReveal: { store.reveal(item) },
                         onCopy: { store.copyToPasteboard(item) },

@@ -2,6 +2,24 @@ import AppKit
 import Foundation
 import UniformTypeIdentifiers
 
+private struct FileExportSummaryError: LocalizedError {
+    let result: FileExportResult
+    let totalCount: Int
+
+    var errorDescription: String? {
+        "Could Not Export All Items"
+    }
+
+    var failureReason: String? {
+        let failedItems = result.failures
+            .prefix(3)
+            .map { "\($0.itemTitle): \($0.message)" }
+            .joined(separator: "\n")
+        return "Exported \(result.exportedURLs.count) of \(totalCount) items. "
+            + "\(result.failures.count) failed.\n\(failedItems)"
+    }
+}
+
 final class ShelfStore: ObservableObject {
     private static let documentDataTypeIdentifiers = [
         "net.daringfireball.markdown",
@@ -30,6 +48,7 @@ final class ShelfStore: ObservableObject {
     ] + documentDataTypeIdentifiers + imageDataTypeIdentifiers
 
     @Published var items: [ShelfItem] = []
+    @Published private(set) var isExporting = false
 
     private let fileActions = FileActionService()
 
@@ -97,12 +116,28 @@ final class ShelfStore: ObservableObject {
         }
     }
 
-    func copyItemsToChosenFolder() {
+    func exportAllItemsToChosenFolder() {
         guard let destination = fileActions.chooseDestinationFolder() else { return }
-        do {
-            try fileActions.export(items: items, to: destination, mode: .copy)
-        } catch {
-            present(error)
+        exportAllItems(to: destination)
+    }
+
+    func exportAllItems(to destination: URL) {
+        guard !items.isEmpty, !isExporting else { return }
+
+        let itemsToExport = items
+        isExporting = true
+
+        Task { @MainActor [weak self] in
+            let result = await Task.detached(priority: .userInitiated) {
+                FileActionService().exportAll(items: itemsToExport, to: destination, mode: .copy)
+            }.value
+
+            guard let self else { return }
+            isExporting = false
+
+            if !result.failures.isEmpty {
+                present(FileExportSummaryError(result: result, totalCount: itemsToExport.count))
+            }
         }
     }
 
