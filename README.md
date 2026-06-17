@@ -12,6 +12,10 @@ ShelfDrop は、Dropover のように使える小さな macOS 用シェルフア
 
 ドラッグ中のファイル、フォルダ、画像、リンク、テキストを棚に入れて、一時的に保持できます。複数の項目をまとめて置くこともできます。
 
+### 対応している形式
+
+Finder からドラッグする通常のファイルやフォルダに対応しています。画像データとして渡される場合は、PNG、TIFF、JPEG、GIF、HEIC、HEIF、SVG、WebP に対応しています。Markdown と HTML は、ファイルまたは文書データとして棚に入れられます。
+
 ### 棚から取り出す
 
 棚に入れた項目は、もう一度ドラッグして Finder や他のアプリへ取り出せます。
@@ -87,6 +91,24 @@ curl -fsSL https://raw.githubusercontent.com/hayashiii-ghub/shelfdrop/main/scrip
 既存の `ShelfDrop.app` が `/Applications` にある場合は、そこに上書きします。`~/Applications` にある場合は、そちらを更新します。どちらにもない場合は、書き込み可能なら `/Applications`、そうでなければ `~/Applications` にインストールします。
 
 アプリのメニューバーから `Download Latest Version...` を選ぶと、最新版 zip のダウンロードも開始できます。
+
+## ターミナルで管理する
+
+よく使う操作は `make` から実行できます。
+
+```sh
+make build
+make check
+make run
+make package
+make install-latest
+make release VERSION=v0.1.4
+make status
+```
+
+`make check` は Swift のテストとシェルスクリプトの構文確認を実行します。`make release VERSION=...` は、タグを作って `main` とタグを GitHub に push します。タグ push 後、GitHub Actions が配布用 zip を作成します。
+
+`main` への push と Pull Request では GitHub Actions の CI が自動実行されます。
 
 ## 配布用 zip をローカルで作る
 

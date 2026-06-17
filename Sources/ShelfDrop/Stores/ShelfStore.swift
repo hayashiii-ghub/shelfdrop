@@ -3,6 +3,11 @@ import Foundation
 import UniformTypeIdentifiers
 
 final class ShelfStore: ObservableObject {
+    private static let documentDataTypeIdentifiers = [
+        "net.daringfireball.markdown",
+        "public.html"
+    ]
+
     private static let imageDataTypeIdentifiers = [
         UTType.png.identifier,
         UTType.tiff.identifier,
@@ -22,7 +27,7 @@ final class ShelfStore: ObservableObject {
         UTType.text.identifier,
         UTType.utf8PlainText.identifier,
         UTType.image.identifier
-    ] + imageDataTypeIdentifiers
+    ] + documentDataTypeIdentifiers + imageDataTypeIdentifiers
 
     @Published var items: [ShelfItem] = []
 
@@ -135,6 +140,23 @@ final class ShelfStore: ObservableObject {
             return
         }
 
+        if let typeIdentifier = Self.documentDataTypeIdentifiers.first(where: {
+            provider.hasItemConformingToTypeIdentifier($0)
+        }) {
+            let suggestedName = provider.suggestedName
+            provider.loadDataRepresentation(forTypeIdentifier: typeIdentifier) { data, _ in
+                guard let data else { return }
+                Task { @MainActor in
+                    self.addDocumentData(
+                        data,
+                        typeIdentifier: typeIdentifier,
+                        suggestedName: suggestedName
+                    )
+                }
+            }
+            return
+        }
+
         let imageTypes = Self.imageDataTypeIdentifiers + [UTType.image.identifier]
         if let typeIdentifier = imageTypes.first(where: { provider.hasItemConformingToTypeIdentifier($0) }) {
             provider.loadDataRepresentation(forTypeIdentifier: typeIdentifier) { data, _ in
@@ -195,6 +217,31 @@ final class ShelfStore: ObservableObject {
         )
     }
 
+    private func addDocumentData(_ data: Data, typeIdentifier: String, suggestedName: String?) {
+        do {
+            let fileExtension = Self.documentFileExtension(for: typeIdentifier)
+            let directory = try fileActions.inboxDirectory()
+            let fallbackName = "Document-\(Date().compactTimestamp()).\(fileExtension)"
+            let requestedName = Self.fileName(
+                suggestedName: suggestedName,
+                fallbackName: fallbackName,
+                fileExtension: fileExtension
+            )
+            let url = directory.availableChildURL(named: requestedName)
+            try data.write(to: url, options: .atomic)
+            items.append(
+                ShelfItem(
+                    kind: .file,
+                    title: url.lastPathComponent,
+                    detail: "Imported document",
+                    url: url
+                )
+            )
+        } catch {
+            present(error)
+        }
+    }
+
     private func addImageData(_ data: Data, typeIdentifier: String) {
         do {
             let fileExtension = Self.fileExtension(for: typeIdentifier)
@@ -212,6 +259,32 @@ final class ShelfStore: ObservableObject {
         } catch {
             present(error)
         }
+    }
+
+    private static func documentFileExtension(for typeIdentifier: String) -> String {
+        switch typeIdentifier {
+        case "public.html":
+            return "html"
+        default:
+            return "md"
+        }
+    }
+
+    private static func fileName(
+        suggestedName: String?,
+        fallbackName: String,
+        fileExtension: String
+    ) -> String {
+        guard let suggestedName, !suggestedName.isEmpty else {
+            return fallbackName
+        }
+
+        let cleanName = suggestedName.sanitizedFileName(defaultName: fallbackName)
+        if cleanName.lowercased().hasSuffix(".\(fileExtension)") {
+            return cleanName
+        }
+
+        return "\(cleanName).\(fileExtension)"
     }
 
     private static func fileExtension(for typeIdentifier: String) -> String {

@@ -14,6 +14,11 @@ let package = Package(
         .executableTarget(
             name: "ShelfDrop",
             path: "Sources/ShelfDrop"
+        ),
+        .testTarget(
+            name: "ShelfDropTests",
+            dependencies: ["ShelfDrop"],
+            path: "Tests/ShelfDropTests"
         )
     ]
 )
