@@ -1,0 +1,45 @@
+import AppKit
+import Foundation
+import Testing
+@testable import ShelfDrop
+
+@MainActor
+struct FinderSelectionImportTests {
+    @Test func addsSelectedFilesAndFoldersToShelf() throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShelfDropTests-\(UUID().uuidString)", isDirectory: true)
+        let fileURL = root.appendingPathComponent("notes.md", isDirectory: false)
+        let folderURL = root.appendingPathComponent("Archive", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: true)
+        try Data("notes".utf8).write(to: fileURL)
+
+        let store = ShelfStore()
+        store.addFileURLs([fileURL, folderURL])
+
+        #expect(store.items.map(\.title) == ["notes.md", "Archive"])
+        #expect(store.items.map(\.kind) == [.file, .folder])
+        #expect(store.items.map(\.url) == [fileURL, folderURL])
+    }
+
+    @Test func convertsAppleEventListItemsWithoutJoiningPaths() {
+        let descriptor = NSAppleEventDescriptor.list()
+        descriptor.insert(NSAppleEventDescriptor(string: "/tmp/first item.md"), at: 1)
+        descriptor.insert(NSAppleEventDescriptor(string: "/tmp/line\nbreak.html"), at: 2)
+
+        let urls = FinderSelectionReader.fileURLs(from: descriptor)
+
+        #expect(urls.map(\.path) == ["/tmp/first item.md", "/tmp/line\nbreak.html"])
+    }
+
+    @Test func enablesGlobalShortcutOnlyWhileFinderIsFrontmost() {
+        #expect(FinderShortcutAvailability.isEnabled(
+            frontmostBundleIdentifier: FinderSelectionReader.finderBundleIdentifier
+        ))
+        #expect(!FinderShortcutAvailability.isEnabled(
+            frontmostBundleIdentifier: "com.apple.TextEdit"
+        ))
+        #expect(!FinderShortcutAvailability.isEnabled(frontmostBundleIdentifier: nil))
+    }
+}

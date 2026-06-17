@@ -20,7 +20,7 @@ install-latest:
 
 release:
 	@if [ -z "$(VERSION)" ]; then \
-		echo "usage: make release VERSION=v0.1.4" >&2; \
+		echo "usage: make release VERSION=v0.1.6" >&2; \
 		exit 2; \
 	fi
 	git tag "$(VERSION)"

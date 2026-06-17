@@ -1,4 +1,10 @@
 import AppKit
+import OSLog
+
+private let finderImportLogger = Logger(
+    subsystem: "work.hayashigoto.ShelfDrop",
+    category: "FinderImport"
+)
 
 @main
 final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegate {
@@ -13,8 +19,10 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
     )!
 
     private let store = ShelfStore()
+    private let finderSelectionReader = FinderSelectionReader()
     private lazy var shelfWindowController = ShelfWindowController(store: store)
     private var shakeDetector: ShakeDetector?
+    private var addFinderSelectionHotKey: GlobalHotKey?
     private var statusItem: NSStatusItem?
     private var copyMenuItem: NSMenuItem?
     private var moveMenuItem: NSMenuItem?
@@ -56,6 +64,15 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         UserDefaults.standard.register(defaults: ["shakeDetectionEnabled": true])
 
         configureStatusItem()
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self,
+            selector: #selector(frontmostApplicationDidChange),
+            name: NSWorkspace.didActivateApplicationNotification,
+            object: nil
+        )
+        updateFinderSelectionHotKey(
+            frontmostBundleIdentifier: NSWorkspace.shared.frontmostApplication?.bundleIdentifier
+        )
 
         let detector = ShakeDetector { [weak self] in
             self?.shelfWindowController.showShelf()
@@ -74,6 +91,8 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        NSWorkspace.shared.notificationCenter.removeObserver(self)
+        addFinderSelectionHotKey = nil
         shakeDetector?.stop()
     }
 
@@ -94,6 +113,13 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         let menu = NSMenu()
         menu.delegate = self
 
+        let addSelectionItem = NSMenuItem(
+            title: "Add Finder Selection",
+            action: #selector(addFinderSelection),
+            keyEquivalent: "\t"
+        )
+        addSelectionItem.keyEquivalentModifierMask = [.option]
+        menu.addItem(addSelectionItem)
         menu.addItem(NSMenuItem(title: "Show Shelf", action: #selector(showShelf), keyEquivalent: ""))
         menu.addItem(.separator())
 
@@ -134,6 +160,58 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
 
     @objc private func showShelf() {
         shelfWindowController.showShelf()
+    }
+
+    @objc private func frontmostApplicationDidChange(_ notification: Notification) {
+        let application = notification.userInfo?[NSWorkspace.applicationUserInfoKey]
+            as? NSRunningApplication
+        updateFinderSelectionHotKey(frontmostBundleIdentifier: application?.bundleIdentifier)
+    }
+
+    private func updateFinderSelectionHotKey(frontmostBundleIdentifier: String?) {
+        let shouldEnable = FinderShortcutAvailability.isEnabled(
+            frontmostBundleIdentifier: frontmostBundleIdentifier
+        )
+
+        if shouldEnable, addFinderSelectionHotKey == nil {
+            addFinderSelectionHotKey = GlobalHotKey { [weak self] in
+                self?.addFinderSelection()
+            }
+            if addFinderSelectionHotKey == nil {
+                finderImportLogger.error("Could not register the Option-Tab shortcut")
+            } else {
+                finderImportLogger.info("Option-Tab enabled for Finder")
+            }
+        } else if !shouldEnable, addFinderSelectionHotKey != nil {
+            addFinderSelectionHotKey = nil
+            finderImportLogger.info("Option-Tab disabled outside Finder")
+        }
+    }
+
+    @objc private func addFinderSelection() {
+        let frontmostBundleIdentifier = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
+        guard frontmostBundleIdentifier == FinderSelectionReader.finderBundleIdentifier else {
+            finderImportLogger.info(
+                "Ignored shortcut for frontmost app: \(frontmostBundleIdentifier ?? "unknown", privacy: .public)"
+            )
+            return
+        }
+
+        do {
+            let urls = try finderSelectionReader.selectedFileURLs()
+            guard !urls.isEmpty else {
+                finderImportLogger.info("Finder selection was empty")
+                return
+            }
+            store.addFileURLs(urls)
+            finderImportLogger.info("Added \(urls.count) Finder selection item(s)")
+            shelfWindowController.showShelf()
+        } catch {
+            finderImportLogger.error("Finder selection failed: \(error.localizedDescription, privacy: .public)")
+            let alert = NSAlert(error: error)
+            alert.messageText = "Could Not Read Finder Selection"
+            alert.runModal()
+        }
     }
 
     @objc private func copyItems() {

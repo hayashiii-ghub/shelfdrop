@@ -61,6 +61,8 @@ cat >"$INFO_PLIST" <<PLIST
   <string>$MIN_SYSTEM_VERSION</string>
   <key>NSHighResolutionCapable</key>
   <true/>
+  <key>NSAppleEventsUsageDescription</key>
+  <string>ShelfDrop uses Finder access to add your selected files to the shelf.</string>
   <key>LSUIElement</key>
   <true/>
   <key>NSPrincipalClass</key>

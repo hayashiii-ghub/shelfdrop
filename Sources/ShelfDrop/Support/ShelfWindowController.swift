@@ -1,5 +1,11 @@
 import AppKit
+import OSLog
 import SwiftUI
+
+private let windowLogger = Logger(
+    subsystem: "work.hayashigoto.ShelfDrop",
+    category: "Windowing"
+)
 
 final class ShelfWindowController: NSObject, NSWindowDelegate {
     private static let shelfSize = NSSize(width: 240, height: 320)
@@ -7,11 +13,7 @@ final class ShelfWindowController: NSObject, NSWindowDelegate {
 
     private let store: ShelfStore
     private var panel: NSPanel?
-    private var globalMouseDownMonitor: Any?
     private var localKeyDownMonitor: Any?
-    private var dismissalTimer: Timer?
-    private var shownAt: TimeInterval = 0
-    private var outsideSince: TimeInterval?
 
     init(store: ShelfStore) {
         self.store = store
@@ -22,17 +24,17 @@ final class ShelfWindowController: NSObject, NSWindowDelegate {
 
         if !panel.isVisible {
             positionNearPointer(panel)
-            shownAt = ProcessInfo.processInfo.systemUptime
-            outsideSince = nil
-            startDismissalBehavior()
+            startEscapeKeyMonitor()
         }
 
         panel.orderFrontRegardless()
+        windowLogger.info("Shelf shown")
     }
 
     func hideShelf() {
         panel?.orderOut(nil)
-        stopDismissalBehavior()
+        stopEscapeKeyMonitor()
+        windowLogger.info("Shelf hidden")
     }
 
     private func shelfPanel() -> NSPanel {
@@ -100,17 +102,8 @@ final class ShelfWindowController: NSObject, NSWindowDelegate {
         panel.setFrameOrigin(origin)
     }
 
-    private func startDismissalBehavior() {
-        stopDismissalBehavior()
-
-        globalMouseDownMonitor = NSEvent.addGlobalMonitorForEvents(
-            matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown]
-        ) { [weak self] _ in
-            DispatchQueue.main.async {
-                self?.hideIfMouseIsOutside()
-            }
-        }
-
+    private func startEscapeKeyMonitor() {
+        stopEscapeKeyMonitor()
         localKeyDownMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             if event.keyCode == 53 {
                 self?.hideShelf()
@@ -118,58 +111,12 @@ final class ShelfWindowController: NSObject, NSWindowDelegate {
             }
             return event
         }
-
-        let timer = Timer(timeInterval: 0.25, repeats: true) { [weak self] _ in
-            self?.hideAfterSustainedOutsideHover()
-        }
-        RunLoop.main.add(timer, forMode: .common)
-        dismissalTimer = timer
     }
 
-    private func stopDismissalBehavior() {
-        if let globalMouseDownMonitor {
-            NSEvent.removeMonitor(globalMouseDownMonitor)
-            self.globalMouseDownMonitor = nil
-        }
-
+    private func stopEscapeKeyMonitor() {
         if let localKeyDownMonitor {
             NSEvent.removeMonitor(localKeyDownMonitor)
             self.localKeyDownMonitor = nil
-        }
-
-        dismissalTimer?.invalidate()
-        dismissalTimer = nil
-        outsideSince = nil
-    }
-
-    private func hideIfMouseIsOutside() {
-        guard let panel, panel.isVisible else { return }
-
-        if !panel.frame.insetBy(dx: -8, dy: -8).contains(NSEvent.mouseLocation) {
-            hideShelf()
-        }
-    }
-
-    private func hideAfterSustainedOutsideHover() {
-        guard let panel, panel.isVisible else {
-            stopDismissalBehavior()
-            return
-        }
-
-        let now = ProcessInfo.processInfo.systemUptime
-        guard now - shownAt > 2.0 else { return }
-
-        if panel.frame.insetBy(dx: -20, dy: -20).contains(NSEvent.mouseLocation) {
-            outsideSince = nil
-            return
-        }
-
-        if outsideSince == nil {
-            outsideSince = now
-        }
-
-        if let outsideSince, now - outsideSince > 4.0 {
-            hideShelf()
         }
     }
 

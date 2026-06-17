@@ -39,6 +39,12 @@ final class ShelfStore: ObservableObject {
         }
     }
 
+    func addFileURLs(_ urls: [URL]) {
+        for url in urls where url.isFileURL {
+            addFileURL(url)
+        }
+    }
+
     func remove(_ item: ShelfItem) {
         items.removeAll { $0.id == item.id }
     }
