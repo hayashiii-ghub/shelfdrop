@@ -19,4 +19,8 @@ if [[ "$(xcode-select -p 2>/dev/null || true)" == "/Library/Developer/CommandLin
 fi
 
 cd "$ROOT_DIR"
-swift test --cache-path "$ROOT_DIR/.build/cache" "${SWIFT_TEST_FLAGS[@]}" "$@"
+if (( ${#SWIFT_TEST_FLAGS[@]} > 0 )); then
+  swift test --cache-path "$ROOT_DIR/.build/cache" "${SWIFT_TEST_FLAGS[@]}" "$@"
+else
+  swift test --cache-path "$ROOT_DIR/.build/cache" "$@"
+fi
