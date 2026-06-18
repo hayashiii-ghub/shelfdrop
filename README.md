@@ -110,13 +110,13 @@ curl -fsSL https://raw.githubusercontent.com/hayashiii-ghub/shelfdrop/main/scrip
 make build
 make check
 make run
-make package
+make package VERSION=v0.1.7
 make install-latest
-make release VERSION=v0.1.6
+make release VERSION=v0.1.7
 make status
 ```
 
-`make check` は Swift のテストとシェルスクリプトの構文確認を実行します。`make release VERSION=...` は、タグを作って `main` とタグを GitHub に push します。タグ push 後、GitHub Actions が配布用 zip を作成します。
+`make check` は Swift のテストとシェルスクリプトの構文確認を実行します。`make release VERSION=...` は、タグを作って `main` とタグを GitHub に push します。タグ push 後、GitHub Actions がタグのバージョン番号を埋め込んだ配布用 zip を作成します。
 
 `main` への push と Pull Request では GitHub Actions の CI が自動実行されます。
 
