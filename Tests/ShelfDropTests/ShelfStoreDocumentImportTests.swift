@@ -22,6 +22,15 @@ struct ShelfStoreDocumentImportTests {
         )
     }
 
+    @Test func importsUTF8PlainTextFileAsFile() async throws {
+        try await assertDocumentImport(
+            typeIdentifier: "public.utf8-plain-text",
+            suggestedName: "notes.txt",
+            contents: "Plain notes",
+            expectedExtension: "txt"
+        )
+    }
+
     private func assertDocumentImport(
         typeIdentifier: String,
         suggestedName: String,

@@ -26,6 +26,12 @@ final class ShelfStore: ObservableObject {
         "public.html"
     ]
 
+    private static let textDataTypeIdentifiers = [
+        UTType.utf8PlainText.identifier,
+        UTType.plainText.identifier,
+        UTType.text.identifier
+    ]
+
     private static let imageDataTypeIdentifiers = [
         UTType.png.identifier,
         UTType.tiff.identifier,
@@ -41,11 +47,8 @@ final class ShelfStore: ObservableObject {
     static let acceptedTypeIdentifiers = [
         UTType.fileURL.identifier,
         UTType.url.identifier,
-        UTType.plainText.identifier,
-        UTType.text.identifier,
-        UTType.utf8PlainText.identifier,
         UTType.image.identifier
-    ] + documentDataTypeIdentifiers + imageDataTypeIdentifiers
+    ] + textDataTypeIdentifiers + documentDataTypeIdentifiers + imageDataTypeIdentifiers
 
     @Published var items: [ShelfItem] = []
     @Published private(set) var isExporting = false
@@ -193,7 +196,11 @@ final class ShelfStore: ObservableObject {
             return
         }
 
-        if let typeIdentifier = Self.documentDataTypeIdentifiers.first(where: {
+        let documentTypes = Self.documentDataTypeIdentifiers
+            + (provider.suggestedName?.lowercased().hasSuffix(".txt") == true
+                ? Self.textDataTypeIdentifiers
+                : [])
+        if let typeIdentifier = documentTypes.first(where: {
             provider.hasItemConformingToTypeIdentifier($0)
         }) {
             let suggestedName = provider.suggestedName
@@ -221,10 +228,10 @@ final class ShelfStore: ObservableObject {
             return
         }
 
-        if provider.hasItemConformingToTypeIdentifier(UTType.plainText.identifier) ||
-            provider.hasItemConformingToTypeIdentifier(UTType.text.identifier) ||
-            provider.hasItemConformingToTypeIdentifier(UTType.utf8PlainText.identifier) {
-            provider.loadItem(forTypeIdentifier: UTType.plainText.identifier, options: nil) { item, _ in
+        if let typeIdentifier = Self.textDataTypeIdentifiers.first(where: {
+            provider.hasItemConformingToTypeIdentifier($0)
+        }) {
+            provider.loadItem(forTypeIdentifier: typeIdentifier, options: nil) { item, _ in
                 guard let text = Self.text(from: item) else { return }
                 Task { @MainActor in
                     self.addText(text)
@@ -318,6 +325,8 @@ final class ShelfStore: ObservableObject {
         switch typeIdentifier {
         case "public.html":
             return "html"
+        case UTType.utf8PlainText.identifier, UTType.plainText.identifier, UTType.text.identifier:
+            return "txt"
         default:
             return "md"
         }
