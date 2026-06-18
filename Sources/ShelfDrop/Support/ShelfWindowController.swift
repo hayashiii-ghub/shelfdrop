@@ -8,7 +8,13 @@ private let windowLogger = Logger(
 )
 
 final class ShelfWindowController: NSObject, NSWindowDelegate {
-    private static let shelfSize = NSSize(width: 240, height: 320)
+    // Matches the approved menu bar glyph's measured 742 x 847 bounds.
+    private static let approvedIconAspectRatio: CGFloat = 742 / 847
+    private static let shelfWidth: CGFloat = 240
+    private static let shelfSize = NSSize(
+        width: shelfWidth,
+        height: shelfWidth / approvedIconAspectRatio
+    )
     private static let shelfOpacity: CGFloat = 0.9
 
     private let store: ShelfStore

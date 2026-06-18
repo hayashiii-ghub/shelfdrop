@@ -108,7 +108,7 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
 
     private func configureStatusItem() {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        item.button?.image = NSImage(systemSymbolName: "tray", accessibilityDescription: "ShelfDrop")
+        item.button?.image = ShelfIcon.templateImage()
         item.button?.imagePosition = .imageOnly
 
         let menu = NSMenu()

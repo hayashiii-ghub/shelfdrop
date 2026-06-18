@@ -68,9 +68,10 @@ private struct ShelfHeader: View {
         HStack(spacing: 10) {
             ZStack(alignment: .leading) {
                 HStack(spacing: 10) {
-                    Image(systemName: "tray.full")
-                        .font(.system(size: 18, weight: .semibold))
-                        .symbolRenderingMode(.hierarchical)
+                    Image(nsImage: ShelfIcon.templateImage())
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 18, height: 18)
 
                     Text("ShelfDrop")
                         .font(.headline)

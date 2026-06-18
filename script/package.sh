@@ -16,8 +16,11 @@ PACKAGE_DIR="$STAGING_DIR/package"
 APP_BUNDLE="$PACKAGE_DIR/$APP_NAME.app"
 APP_CONTENTS="$APP_BUNDLE/Contents"
 APP_MACOS="$APP_CONTENTS/MacOS"
+APP_RESOURCES="$APP_CONTENTS/Resources"
 APP_BINARY="$APP_MACOS/$APP_NAME"
 INFO_PLIST="$APP_CONTENTS/Info.plist"
+APP_ICON="$ROOT_DIR/Assets/ShelfDrop.icns"
+MENU_BAR_ICON="$ROOT_DIR/Assets/MenuBarTemplate.png"
 ZIP_PATH="$DIST_DIR/$APP_NAME-macos.zip"
 SWIFTPM_CACHE_DIR="$ROOT_DIR/.build/cache"
 
@@ -47,8 +50,10 @@ swift build "${SWIFT_BUILD_FLAGS[@]}"
 BUILD_BINARY="$(swift build "${SWIFT_BUILD_FLAGS[@]}" --show-bin-path)/$APP_NAME"
 
 rm -rf "$DIST_PACKAGE_DIR" "$ZIP_PATH"
-mkdir -p "$APP_MACOS"
+mkdir -p "$APP_MACOS" "$APP_RESOURCES"
 cp "$BUILD_BINARY" "$APP_BINARY"
+cp "$APP_ICON" "$APP_RESOURCES/ShelfDrop.icns"
+cp "$MENU_BAR_ICON" "$APP_RESOURCES/MenuBarTemplate.png"
 chmod +x "$APP_BINARY"
 
 cat >"$INFO_PLIST" <<PLIST
@@ -62,6 +67,8 @@ cat >"$INFO_PLIST" <<PLIST
   <string>$BUNDLE_ID</string>
   <key>CFBundleName</key>
   <string>$APP_NAME</string>
+  <key>CFBundleIconFile</key>
+  <string>ShelfDrop.icns</string>
   <key>CFBundleShortVersionString</key>
   <string>$APP_VERSION</string>
   <key>CFBundleVersion</key>
