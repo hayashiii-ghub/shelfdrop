@@ -62,6 +62,18 @@ final class ShelfStore: ObservableObject {
         }
     }
 
+    @discardableResult
+    func handleDrop(providers: [NSItemProvider]) -> Bool {
+        guard !providers.contains(where: {
+            $0.hasItemConformingToTypeIdentifier(ShelfDragPayload.typeIdentifier)
+        }) else {
+            return false
+        }
+
+        importItems(from: providers)
+        return true
+    }
+
     func addFileURLs(_ urls: [URL]) {
         for url in urls where url.isFileURL {
             addFileURL(url)
@@ -74,21 +86,6 @@ final class ShelfStore: ObservableObject {
 
     func clear() {
         items.removeAll()
-    }
-
-    func move(from source: IndexSet, to destination: Int) {
-        items.move(fromOffsets: source, toOffset: destination)
-    }
-
-    func move(itemID: UUID, onto targetID: UUID) {
-        guard itemID != targetID,
-              let sourceIndex = items.firstIndex(where: { $0.id == itemID }),
-              let targetIndex = items.firstIndex(where: { $0.id == targetID }) else {
-            return
-        }
-
-        let destination = targetIndex > sourceIndex ? targetIndex + 1 : targetIndex
-        items.move(fromOffsets: IndexSet(integer: sourceIndex), toOffset: destination)
     }
 
     func open(_ item: ShelfItem) {
@@ -219,10 +216,15 @@ final class ShelfStore: ObservableObject {
 
         let imageTypes = Self.imageDataTypeIdentifiers + [UTType.image.identifier]
         if let typeIdentifier = imageTypes.first(where: { provider.hasItemConformingToTypeIdentifier($0) }) {
+            let suggestedName = provider.suggestedName
             provider.loadDataRepresentation(forTypeIdentifier: typeIdentifier) { data, _ in
                 guard let data else { return }
                 Task { @MainActor in
-                    self.addImageData(data, typeIdentifier: typeIdentifier)
+                    self.addImageData(
+                        data,
+                        typeIdentifier: typeIdentifier,
+                        suggestedName: suggestedName
+                    )
                 }
             }
             return
@@ -242,13 +244,45 @@ final class ShelfStore: ObservableObject {
     }
 
     private func addFileURL(_ url: URL) {
-        let kind: ShelfItemKind = url.isDirectory ? .folder : .file
+        let canonicalURL = url.standardizedFileURL.resolvingSymlinksInPath()
+        guard !items.contains(where: { item in
+            item.url?.standardizedFileURL.resolvingSymlinksInPath() == canonicalURL
+        }) else {
+            return
+        }
+
+        let kind: ShelfItemKind
+        if canonicalURL.isDirectory {
+            kind = .folder
+        } else if UTType(filenameExtension: canonicalURL.pathExtension)?.conforms(to: .image) == true {
+            kind = .image
+        } else {
+            kind = .file
+        }
+
+        if kind == .image,
+           let data = try? Data(contentsOf: canonicalURL, options: .mappedIfSafe),
+           let importedIndex = items.firstIndex(where: { item in
+               item.kind == .image
+                   && item.detail == "Imported image"
+                   && item.url.map { Self.file(at: $0, hasContents: data) } == true
+           }) {
+            let importedURL = items[importedIndex].url
+            items[importedIndex].title = canonicalURL.lastPathComponent
+            items[importedIndex].detail = canonicalURL.deletingLastPathComponent().path
+            items[importedIndex].url = canonicalURL
+            if let importedURL, importedURL != canonicalURL {
+                try? FileManager.default.removeItem(at: importedURL)
+            }
+            return
+        }
+
         items.append(
             ShelfItem(
                 kind: kind,
-                title: url.lastPathComponent,
-                detail: url.deletingLastPathComponent().path,
-                url: url
+                title: canonicalURL.lastPathComponent,
+                detail: canonicalURL.deletingLastPathComponent().path,
+                url: canonicalURL
             )
         )
     }
@@ -302,11 +336,27 @@ final class ShelfStore: ObservableObject {
         }
     }
 
-    private func addImageData(_ data: Data, typeIdentifier: String) {
+    private func addImageData(
+        _ data: Data,
+        typeIdentifier: String,
+        suggestedName: String?
+    ) {
+        guard !items.contains(where: { item in
+            item.url.map { Self.file(at: $0, hasContents: data) } == true
+        }) else {
+            return
+        }
+
         do {
             let fileExtension = Self.fileExtension(for: typeIdentifier)
             let directory = try fileActions.inboxDirectory()
-            let url = directory.appendingPathComponent("Image-\(Date().compactTimestamp()).\(fileExtension)")
+            let fallbackName = "Image-\(Date().compactTimestamp()).\(fileExtension)"
+            let requestedName = Self.fileName(
+                suggestedName: suggestedName,
+                fallbackName: fallbackName,
+                fileExtension: fileExtension
+            )
+            let url = directory.availableChildURL(named: requestedName)
             try data.write(to: url, options: .atomic)
             items.append(
                 ShelfItem(
@@ -319,6 +369,14 @@ final class ShelfStore: ObservableObject {
         } catch {
             present(error)
         }
+    }
+
+    private static func file(at url: URL, hasContents data: Data) -> Bool {
+        guard url.isFileURL,
+              let existingData = try? Data(contentsOf: url, options: .mappedIfSafe) else {
+            return false
+        }
+        return existingData == data
     }
 
     private static func documentFileExtension(for typeIdentifier: String) -> String {

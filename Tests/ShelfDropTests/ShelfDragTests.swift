@@ -5,16 +5,17 @@ import UniformTypeIdentifiers
 @testable import ShelfDrop
 
 struct ShelfDragTests {
-    @Test func movingItemOntoAnotherItemReordersWithoutDuplicating() {
+    @Test func droppingShelfItemBackOntoShelfIsRejectedWithoutChangingItems() {
         let first = ShelfItem(kind: .file, title: "first.txt", detail: "")
         let second = ShelfItem(kind: .file, title: "second.txt", detail: "")
         let third = ShelfItem(kind: .file, title: "third.txt", detail: "")
         let store = ShelfStore()
         store.items = [first, second, third]
 
-        store.move(itemID: first.id, onto: third.id)
+        let accepted = store.handleDrop(providers: [first.dragProvider()])
 
-        #expect(store.items.map(\.id) == [second.id, third.id, first.id])
+        #expect(!accepted)
+        #expect(store.items.map(\.id) == [first.id, second.id, third.id])
         #expect(store.items.count == 3)
     }
 
@@ -45,6 +46,99 @@ struct ShelfDragTests {
         try await Task.sleep(nanoseconds: 200_000_000)
 
         #expect(store.items.map(\.id) == [item.id])
+    }
+
+    @MainActor
+    @Test func droppingSameFileURLWithoutInternalMarkerDoesNotDuplicate() async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShelfDropTests-\(UUID().uuidString)", isDirectory: true)
+        let fileURL = root.appendingPathComponent("notes.md")
+        defer { try? FileManager.default.removeItem(at: root) }
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        try Data("# Notes".utf8).write(to: fileURL)
+
+        let store = ShelfStore()
+        store.addFileURLs([fileURL])
+        let providerWithoutMarker = NSItemProvider(object: fileURL as NSURL)
+
+        store.handleDrop(providers: [providerWithoutMarker])
+        try await Task.sleep(nanoseconds: 200_000_000)
+
+        #expect(store.items.count == 1)
+        #expect(store.items.first?.url == fileURL)
+    }
+
+    @MainActor
+    @Test func optionTabAndImageDataDropCreateOneConsistentImageItem() async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShelfDropTests-\(UUID().uuidString)", isDirectory: true)
+        let fileURL = root.appendingPathComponent("logo.png")
+        let imageData = Data([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])
+        let store = ShelfStore()
+        defer {
+            for item in store.items where item.url != fileURL {
+                if let url = item.url { try? FileManager.default.removeItem(at: url) }
+            }
+            try? FileManager.default.removeItem(at: root)
+        }
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        try imageData.write(to: fileURL)
+
+        store.addFileURLs([fileURL])
+
+        let imageProvider = NSItemProvider()
+        imageProvider.suggestedName = fileURL.lastPathComponent
+        imageProvider.registerDataRepresentation(
+            forTypeIdentifier: UTType.png.identifier,
+            visibility: .all
+        ) { completion in
+            completion(imageData, nil)
+            return nil
+        }
+
+        store.handleDrop(providers: [imageProvider])
+        try await Task.sleep(nanoseconds: 200_000_000)
+
+        #expect(store.items.count == 1)
+        #expect(store.items.first?.kind == .image)
+        #expect(store.items.first?.title == fileURL.lastPathComponent)
+        #expect(store.items.first?.url == fileURL)
+    }
+
+    @MainActor
+    @Test func imageDataDropThenOptionTabUsesOriginalFileWithoutDuplicating() async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShelfDropTests-\(UUID().uuidString)", isDirectory: true)
+        let fileURL = root.appendingPathComponent("logo.png")
+        let imageData = Data([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])
+        let store = ShelfStore()
+        defer {
+            for item in store.items where item.url != fileURL {
+                if let url = item.url { try? FileManager.default.removeItem(at: url) }
+            }
+            try? FileManager.default.removeItem(at: root)
+        }
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        try imageData.write(to: fileURL)
+
+        let imageProvider = NSItemProvider()
+        imageProvider.suggestedName = fileURL.lastPathComponent
+        imageProvider.registerDataRepresentation(
+            forTypeIdentifier: UTType.png.identifier,
+            visibility: .all
+        ) { completion in
+            completion(imageData, nil)
+            return nil
+        }
+
+        store.handleDrop(providers: [imageProvider])
+        try await Task.sleep(nanoseconds: 200_000_000)
+        store.addFileURLs([fileURL])
+
+        #expect(store.items.count == 1)
+        #expect(store.items.first?.kind == .image)
+        #expect(store.items.first?.title == fileURL.lastPathComponent)
+        #expect(store.items.first?.url == fileURL)
     }
 
     @Test func batchDragUsesOnlyFileBackedItemsInShelfOrder() {
