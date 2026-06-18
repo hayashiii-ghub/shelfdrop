@@ -30,12 +30,6 @@ struct ShelfItemRow: View {
 
             Spacer(minLength: 6)
 
-            Image(systemName: "line.3.horizontal")
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(.tertiary)
-                .frame(width: 18, height: 22)
-                .help("Drag")
-
             Button(action: onOpen) {
                 Image(systemName: "arrow.up.right.square")
             }

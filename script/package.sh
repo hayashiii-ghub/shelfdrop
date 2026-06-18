@@ -10,7 +10,9 @@ source "$ROOT_DIR/script/version.sh"
 
 APP_VERSION="$(resolve_shelfdrop_version "$ROOT_DIR")"
 DIST_DIR="$ROOT_DIR/dist"
-PACKAGE_DIR="$DIST_DIR/package"
+DIST_PACKAGE_DIR="$DIST_DIR/package"
+STAGING_DIR="$(mktemp -d "${TMPDIR:-/tmp}/ShelfDrop-package.XXXXXX")"
+PACKAGE_DIR="$STAGING_DIR/package"
 APP_BUNDLE="$PACKAGE_DIR/$APP_NAME.app"
 APP_CONTENTS="$APP_BUNDLE/Contents"
 APP_MACOS="$APP_CONTENTS/MacOS"
@@ -18,6 +20,8 @@ APP_BINARY="$APP_MACOS/$APP_NAME"
 INFO_PLIST="$APP_CONTENTS/Info.plist"
 ZIP_PATH="$DIST_DIR/$APP_NAME-macos.zip"
 SWIFTPM_CACHE_DIR="$ROOT_DIR/.build/cache"
+
+trap 'rm -rf "$STAGING_DIR"' EXIT
 
 export CLANG_MODULE_CACHE_PATH="${CLANG_MODULE_CACHE_PATH:-$ROOT_DIR/.build/module-cache}"
 
@@ -42,7 +46,7 @@ echo "Building $BUILD_KIND release..."
 swift build "${SWIFT_BUILD_FLAGS[@]}"
 BUILD_BINARY="$(swift build "${SWIFT_BUILD_FLAGS[@]}" --show-bin-path)/$APP_NAME"
 
-rm -rf "$PACKAGE_DIR" "$ZIP_PATH"
+rm -rf "$DIST_PACKAGE_DIR" "$ZIP_PATH"
 mkdir -p "$APP_MACOS"
 cp "$BUILD_BINARY" "$APP_BINARY"
 chmod +x "$APP_BINARY"
@@ -89,5 +93,9 @@ codesign --verify --deep --strict "$APP_BUNDLE"
 
 mkdir -p "$DIST_DIR"
 COPYFILE_DISABLE=1 ditto -c -k --keepParent --norsrc --noextattr --noqtn --noacl "$APP_BUNDLE" "$ZIP_PATH"
+
+mkdir -p "$DIST_PACKAGE_DIR"
+COPYFILE_DISABLE=1 ditto --norsrc --noextattr --noqtn --noacl \
+  "$APP_BUNDLE" "$DIST_PACKAGE_DIR/$APP_NAME.app"
 
 echo "$ZIP_PATH"

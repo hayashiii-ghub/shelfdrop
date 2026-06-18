@@ -26,7 +26,7 @@ extension ShelfItem {
 
         provider.registerDataRepresentation(
             forTypeIdentifier: ShelfDragPayload.typeIdentifier,
-            visibility: .ownProcess
+            visibility: .all
         ) { completion in
             completion(Data(id.uuidString.utf8), nil)
             return nil
