@@ -4,6 +4,7 @@ struct ContentView: View {
     @ObservedObject var store: ShelfStore
     let onDismiss: () -> Void
     @State private var isDropTargeted = false
+    @State private var draggingItemID: UUID?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -35,6 +36,11 @@ struct ContentView: View {
                 )
         }
         .onDrop(of: ShelfStore.acceptedTypeIdentifiers, isTargeted: $isDropTargeted) { providers in
+            if providers.contains(where: {
+                $0.hasItemConformingToTypeIdentifier(ShelfDragPayload.typeIdentifier)
+            }) {
+                draggingItemID = nil
+            }
             store.importItems(from: providers)
             return true
         }
@@ -43,13 +49,29 @@ struct ContentView: View {
     private var itemList: some View {
         ScrollView {
             LazyVStack(spacing: 8) {
-                ForEach($store.items) { $item in
+                ForEach(store.items) { item in
                     ShelfItemRow(
-                        item: $item,
+                        item: item,
                         onOpen: { store.open(item) },
                         onReveal: { store.reveal(item) },
                         onCopy: { store.copyToPasteboard(item) },
                         onRemove: { store.remove(item) }
+                    )
+                    .onDrag {
+                        draggingItemID = item.id
+                        return item.dragProvider()
+                    }
+                    .onDrop(
+                        of: [ShelfDragPayload.typeIdentifier],
+                        delegate: ShelfItemDropDelegate(
+                            targetItemID: item.id,
+                            draggingItemID: $draggingItemID,
+                            moveItem: { draggedID, targetID in
+                                withAnimation(.easeInOut(duration: 0.12)) {
+                                    store.move(itemID: draggedID, onto: targetID)
+                                }
+                            }
+                        )
                     )
                 }
             }

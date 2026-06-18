@@ -2,10 +2,34 @@ import AppKit
 import Foundation
 import UniformTypeIdentifiers
 
+private struct FileExportSummaryError: LocalizedError {
+    let result: FileExportResult
+    let totalCount: Int
+
+    var errorDescription: String? {
+        "Could Not Export All Items"
+    }
+
+    var failureReason: String? {
+        let failedItems = result.failures
+            .prefix(3)
+            .map { "\($0.itemTitle): \($0.message)" }
+            .joined(separator: "\n")
+        return "Exported \(result.exportedURLs.count) of \(totalCount) items. "
+            + "\(result.failures.count) failed.\n\(failedItems)"
+    }
+}
+
 final class ShelfStore: ObservableObject {
     private static let documentDataTypeIdentifiers = [
         "net.daringfireball.markdown",
         "public.html"
+    ]
+
+    private static let textDataTypeIdentifiers = [
+        UTType.utf8PlainText.identifier,
+        UTType.plainText.identifier,
+        UTType.text.identifier
     ]
 
     private static let imageDataTypeIdentifiers = [
@@ -23,18 +47,17 @@ final class ShelfStore: ObservableObject {
     static let acceptedTypeIdentifiers = [
         UTType.fileURL.identifier,
         UTType.url.identifier,
-        UTType.plainText.identifier,
-        UTType.text.identifier,
-        UTType.utf8PlainText.identifier,
         UTType.image.identifier
-    ] + documentDataTypeIdentifiers + imageDataTypeIdentifiers
+    ] + textDataTypeIdentifiers + documentDataTypeIdentifiers + imageDataTypeIdentifiers
 
     @Published var items: [ShelfItem] = []
+    @Published private(set) var isExporting = false
 
     private let fileActions = FileActionService()
 
     func importItems(from providers: [NSItemProvider]) {
-        for provider in providers {
+        for provider in providers where
+            !provider.hasItemConformingToTypeIdentifier(ShelfDragPayload.typeIdentifier) {
             importItem(from: provider)
         }
     }
@@ -55,6 +78,17 @@ final class ShelfStore: ObservableObject {
 
     func move(from source: IndexSet, to destination: Int) {
         items.move(fromOffsets: source, toOffset: destination)
+    }
+
+    func move(itemID: UUID, onto targetID: UUID) {
+        guard itemID != targetID,
+              let sourceIndex = items.firstIndex(where: { $0.id == itemID }),
+              let targetIndex = items.firstIndex(where: { $0.id == targetID }) else {
+            return
+        }
+
+        let destination = targetIndex > sourceIndex ? targetIndex + 1 : targetIndex
+        items.move(fromOffsets: IndexSet(integer: sourceIndex), toOffset: destination)
     }
 
     func open(_ item: ShelfItem) {
@@ -99,10 +133,26 @@ final class ShelfStore: ObservableObject {
 
     func copyItemsToChosenFolder() {
         guard let destination = fileActions.chooseDestinationFolder() else { return }
-        do {
-            try fileActions.export(items: items, to: destination, mode: .copy)
-        } catch {
-            present(error)
+        exportAllItems(to: destination)
+    }
+
+    func exportAllItems(to destination: URL) {
+        guard !items.isEmpty, !isExporting else { return }
+
+        let itemsToExport = items
+        isExporting = true
+
+        Task { @MainActor [weak self] in
+            let result = await Task.detached(priority: .userInitiated) {
+                FileActionService().exportAll(items: itemsToExport, to: destination, mode: .copy)
+            }.value
+
+            guard let self else { return }
+            isExporting = false
+
+            if !result.failures.isEmpty {
+                present(FileExportSummaryError(result: result, totalCount: itemsToExport.count))
+            }
         }
     }
 
@@ -146,7 +196,11 @@ final class ShelfStore: ObservableObject {
             return
         }
 
-        if let typeIdentifier = Self.documentDataTypeIdentifiers.first(where: {
+        let documentTypes = Self.documentDataTypeIdentifiers
+            + (provider.suggestedName?.lowercased().hasSuffix(".txt") == true
+                ? Self.textDataTypeIdentifiers
+                : [])
+        if let typeIdentifier = documentTypes.first(where: {
             provider.hasItemConformingToTypeIdentifier($0)
         }) {
             let suggestedName = provider.suggestedName
@@ -174,10 +228,10 @@ final class ShelfStore: ObservableObject {
             return
         }
 
-        if provider.hasItemConformingToTypeIdentifier(UTType.plainText.identifier) ||
-            provider.hasItemConformingToTypeIdentifier(UTType.text.identifier) ||
-            provider.hasItemConformingToTypeIdentifier(UTType.utf8PlainText.identifier) {
-            provider.loadItem(forTypeIdentifier: UTType.plainText.identifier, options: nil) { item, _ in
+        if let typeIdentifier = Self.textDataTypeIdentifiers.first(where: {
+            provider.hasItemConformingToTypeIdentifier($0)
+        }) {
+            provider.loadItem(forTypeIdentifier: typeIdentifier, options: nil) { item, _ in
                 guard let text = Self.text(from: item) else { return }
                 Task { @MainActor in
                     self.addText(text)
@@ -271,6 +325,8 @@ final class ShelfStore: ObservableObject {
         switch typeIdentifier {
         case "public.html":
             return "html"
+        case UTType.utf8PlainText.identifier, UTType.plainText.identifier, UTType.text.identifier:
+            return "txt"
         default:
             return "md"
         }

@@ -5,11 +5,22 @@ struct ActionBar: View {
 
     var body: some View {
         HStack(spacing: 8) {
+            MultiFileDragSource(
+                fileURLs: store.isExporting ? [] : store.items.batchDragFileURLs
+            )
+            .frame(width: 20, height: 20)
+
             Button {
                 store.copyItemsToChosenFolder()
             } label: {
-                Label("Copy", systemImage: "doc.on.doc")
+                if store.isExporting {
+                    ProgressView()
+                        .controlSize(.small)
+                } else {
+                    Label("Copy All", systemImage: "doc.on.doc")
+                }
             }
+            .help("Copy all items to a folder")
 
             Button {
                 store.moveItemsToChosenFolder()
@@ -36,6 +47,6 @@ struct ActionBar: View {
         .labelStyle(.iconOnly)
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .disabled(store.items.isEmpty)
+        .disabled(store.items.isEmpty || store.isExporting)
     }
 }

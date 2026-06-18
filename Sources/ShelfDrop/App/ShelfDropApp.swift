@@ -98,10 +98,11 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
 
     func menuWillOpen(_ menu: NSMenu) {
         let hasItems = !store.items.isEmpty
-        copyMenuItem?.isEnabled = hasItems
-        moveMenuItem?.isEnabled = hasItems
-        zipMenuItem?.isEnabled = hasItems
-        clearMenuItem?.isEnabled = hasItems
+        let canManageItems = hasItems && !store.isExporting
+        copyMenuItem?.isEnabled = canManageItems
+        moveMenuItem?.isEnabled = canManageItems
+        zipMenuItem?.isEnabled = canManageItems
+        clearMenuItem?.isEnabled = canManageItems
         shakeMenuItem?.state = UserDefaults.standard.bool(forKey: "shakeDetectionEnabled") ? .on : .off
     }
 
