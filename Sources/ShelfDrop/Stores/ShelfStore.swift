@@ -53,7 +53,8 @@ final class ShelfStore: ObservableObject {
     private let fileActions = FileActionService()
 
     func importItems(from providers: [NSItemProvider]) {
-        for provider in providers {
+        for provider in providers where
+            !provider.hasItemConformingToTypeIdentifier(ShelfDragPayload.typeIdentifier) {
             importItem(from: provider)
         }
     }
@@ -74,6 +75,17 @@ final class ShelfStore: ObservableObject {
 
     func move(from source: IndexSet, to destination: Int) {
         items.move(fromOffsets: source, toOffset: destination)
+    }
+
+    func move(itemID: UUID, onto targetID: UUID) {
+        guard itemID != targetID,
+              let sourceIndex = items.firstIndex(where: { $0.id == itemID }),
+              let targetIndex = items.firstIndex(where: { $0.id == targetID }) else {
+            return
+        }
+
+        let destination = targetIndex > sourceIndex ? targetIndex + 1 : targetIndex
+        items.move(fromOffsets: IndexSet(integer: sourceIndex), toOffset: destination)
     }
 
     func open(_ item: ShelfItem) {
@@ -116,7 +128,7 @@ final class ShelfStore: ObservableObject {
         }
     }
 
-    func exportAllItemsToChosenFolder() {
+    func copyItemsToChosenFolder() {
         guard let destination = fileActions.chooseDestinationFolder() else { return }
         exportAllItems(to: destination)
     }

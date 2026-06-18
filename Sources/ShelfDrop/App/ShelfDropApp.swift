@@ -24,7 +24,7 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
     private var shakeDetector: ShakeDetector?
     private var addFinderSelectionHotKey: GlobalHotKey?
     private var statusItem: NSStatusItem?
-    private var exportMenuItem: NSMenuItem?
+    private var copyMenuItem: NSMenuItem?
     private var moveMenuItem: NSMenuItem?
     private var zipMenuItem: NSMenuItem?
     private var clearMenuItem: NSMenuItem?
@@ -99,7 +99,7 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
     func menuWillOpen(_ menu: NSMenu) {
         let hasItems = !store.items.isEmpty
         let canManageItems = hasItems && !store.isExporting
-        exportMenuItem?.isEnabled = canManageItems
+        copyMenuItem?.isEnabled = canManageItems
         moveMenuItem?.isEnabled = canManageItems
         zipMenuItem?.isEnabled = canManageItems
         clearMenuItem?.isEnabled = canManageItems
@@ -124,13 +124,13 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         menu.addItem(NSMenuItem(title: "Show Shelf", action: #selector(showShelf), keyEquivalent: ""))
         menu.addItem(.separator())
 
-        let exportItem = NSMenuItem(title: "Export All...", action: #selector(exportItems), keyEquivalent: "")
+        let copyItem = NSMenuItem(title: "Copy Items To...", action: #selector(copyItems), keyEquivalent: "")
         let moveItem = NSMenuItem(title: "Move Items To...", action: #selector(moveItems), keyEquivalent: "")
         let zipItem = NSMenuItem(title: "Create ZIP...", action: #selector(createZip), keyEquivalent: "")
-        exportMenuItem = exportItem
+        copyMenuItem = copyItem
         moveMenuItem = moveItem
         zipMenuItem = zipItem
-        menu.addItem(exportItem)
+        menu.addItem(copyItem)
         menu.addItem(moveItem)
         menu.addItem(zipItem)
 
@@ -215,8 +215,8 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         }
     }
 
-    @objc private func exportItems() {
-        store.exportAllItemsToChosenFolder()
+    @objc private func copyItems() {
+        store.copyItemsToChosenFolder()
     }
 
     @objc private func moveItems() {

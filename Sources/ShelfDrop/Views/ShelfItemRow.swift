@@ -58,9 +58,6 @@ struct ShelfItemRow: View {
         .padding(.horizontal, 8)
         .padding(.vertical, 7)
         .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
-        .onDrag {
-            item.dragProvider()
-        }
         .contextMenu {
             Button("Open", action: onOpen)
             Button("Copy", action: onCopy)
