@@ -8,7 +8,7 @@ struct ActionBar: View {
             MultiFileDragSource(
                 fileURLs: store.isExporting ? [] : store.items.batchDragFileURLs
             )
-            .frame(width: 20, height: 20)
+            .frame(width: 24, height: 24)
 
             Button {
                 store.copyItemsToChosenFolder()
@@ -20,19 +20,24 @@ struct ActionBar: View {
                     Label("Copy All", systemImage: "doc.on.doc")
                 }
             }
-            .help("Copy all items to a folder")
+            .frame(width: 24, height: 24)
+            .help("Copy All to Folder")
 
             Button {
                 store.moveItemsToChosenFolder()
             } label: {
-                Label("Move", systemImage: "arrow.forward")
+                Label("Move All to Folder", systemImage: "folder.badge.plus")
             }
+            .frame(width: 24, height: 24)
+            .help("Move All to Folder")
 
             Button {
                 store.createZipArchive()
             } label: {
-                Label("ZIP", systemImage: "archivebox")
+                Label("Create ZIP", systemImage: "doc.zipper")
             }
+            .frame(width: 24, height: 24)
+            .help("Create ZIP Archive")
 
             Spacer()
 
@@ -41,8 +46,10 @@ struct ActionBar: View {
             } label: {
                 Image(systemName: "trash")
             }
-            .help("Clear")
+            .frame(width: 24, height: 24)
+            .help("Clear Shelf")
         }
+        .font(.system(size: 14, weight: .medium))
         .buttonStyle(.borderless)
         .labelStyle(.iconOnly)
         .padding(.horizontal, 12)

@@ -58,7 +58,13 @@ private final class MultiFileDragSourceView: NSImageView, NSDraggingSource {
         self.fileURLs = fileURLs
         super.init(frame: .zero)
 
-        image = NSImage(systemSymbolName: "rectangle.stack", accessibilityDescription: "Drag All Files")
+        let symbol = NSImage(
+            systemSymbolName: "square.and.arrow.up.on.square",
+            accessibilityDescription: "Drag All Files"
+        )
+        image = symbol?.withSymbolConfiguration(
+            NSImage.SymbolConfiguration(pointSize: 14, weight: .medium)
+        )
         imageScaling = .scaleProportionallyDown
         contentTintColor = .secondaryLabelColor
         updateState()
@@ -69,7 +75,7 @@ private final class MultiFileDragSourceView: NSImageView, NSDraggingSource {
     }
 
     override var intrinsicContentSize: NSSize {
-        NSSize(width: 20, height: 20)
+        NSSize(width: 24, height: 24)
     }
 
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool {
@@ -131,7 +137,7 @@ private final class MultiFileDragSourceView: NSImageView, NSDraggingSource {
     private func updateState() {
         isEnabled = fileURLs.count > 1
         alphaValue = isEnabled ? 1 : 0.35
-        toolTip = fileURLs.count > 1 ? "Drag \(fileURLs.count) Files" : "Add at least 2 files"
+        toolTip = fileURLs.count > 1 ? "Drag All \(fileURLs.count) Files" : "Add at Least 2 Files"
         window?.invalidateCursorRects(for: self)
     }
 }
