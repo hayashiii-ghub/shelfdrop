@@ -8,7 +8,8 @@ struct ActionBar: View {
             MultiFileDragSource(
                 fileURLs: store.isExporting ? [] : store.items.batchDragFileURLs
             )
-            .frame(width: 24, height: 24)
+            .frame(width: 26, height: 26)
+            .shelfGlassControl(in: RoundedRectangle(cornerRadius: 7, style: .continuous))
 
             Button {
                 store.copyItemsToChosenFolder()
@@ -20,7 +21,8 @@ struct ActionBar: View {
                     Label("Copy All", systemImage: "doc.on.doc")
                 }
             }
-            .frame(width: 24, height: 24)
+            .frame(width: 26, height: 26)
+            .shelfGlassControl(in: RoundedRectangle(cornerRadius: 7, style: .continuous))
             .help("Copy All to Folder")
 
             Button {
@@ -28,7 +30,8 @@ struct ActionBar: View {
             } label: {
                 Label("Move All to Folder", systemImage: "folder.badge.plus")
             }
-            .frame(width: 24, height: 24)
+            .frame(width: 26, height: 26)
+            .shelfGlassControl(in: RoundedRectangle(cornerRadius: 7, style: .continuous))
             .help("Move All to Folder")
 
             Button {
@@ -36,7 +39,8 @@ struct ActionBar: View {
             } label: {
                 Label("Create ZIP", systemImage: "doc.zipper")
             }
-            .frame(width: 24, height: 24)
+            .frame(width: 26, height: 26)
+            .shelfGlassControl(in: RoundedRectangle(cornerRadius: 7, style: .continuous))
             .help("Create ZIP Archive")
 
             Spacer()
@@ -46,7 +50,8 @@ struct ActionBar: View {
             } label: {
                 Image(systemName: "trash")
             }
-            .frame(width: 24, height: 24)
+            .frame(width: 26, height: 26)
+            .shelfGlassControl(in: RoundedRectangle(cornerRadius: 7, style: .continuous))
             .help("Clear Shelf")
         }
         .font(.system(size: 14, weight: .medium))
