@@ -19,9 +19,8 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         string: "https://github.com/hayashiii-ghub/shelfdrop/releases/latest"
     )!
 
-    private let store = ShelfStore()
     private let finderSelectionReader = FinderSelectionReader()
-    private lazy var shelfWindowController = ShelfWindowController(store: store)
+    private lazy var shelfCoordinator = ShelfCoordinator()
     private var shakeDetector: ShakeDetector?
     private var addFinderSelectionHotKey: GlobalHotKey?
     private var statusItem: NSStatusItem?
@@ -63,7 +62,7 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         UserDefaults.standard.register(defaults: ["shakeDetectionEnabled": true])
-        store.discardStaleManagedFiles()
+        shelfCoordinator.discardStaleManagedFiles()
 
         configureStatusItem()
         NSWorkspace.shared.notificationCenter.addObserver(
@@ -77,7 +76,7 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         )
 
         let detector = ShakeDetector { [weak self] in
-            self?.shelfWindowController.showShelf()
+            self?.shelfCoordinator.openShelfForDrag()
         }
         detector.start()
         shakeDetector = detector
@@ -96,12 +95,13 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         NSWorkspace.shared.notificationCenter.removeObserver(self)
         addFinderSelectionHotKey = nil
         shakeDetector?.stop()
-        store.clear()
+        shelfCoordinator.clearAll()
     }
 
     func menuWillOpen(_ menu: NSMenu) {
-        let hasItems = !store.items.isEmpty
-        let canManageItems = hasItems && !store.isExporting
+        let activeStore = shelfCoordinator.activeStore
+        let hasItems = activeStore?.items.isEmpty == false
+        let canManageItems = hasItems && activeStore?.isExporting == false
         copyMenuItem?.isEnabled = canManageItems
         moveMenuItem?.isEnabled = canManageItems
         zipMenuItem?.isEnabled = canManageItems
@@ -124,7 +124,7 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         )
         addSelectionItem.keyEquivalentModifierMask = [.option]
         menu.addItem(addSelectionItem)
-        menu.addItem(NSMenuItem(title: "Show Shelf", action: #selector(showShelf), keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "Show Shelves", action: #selector(showShelves), keyEquivalent: ""))
         menu.addItem(.separator())
 
         let copyItem = NSMenuItem(title: "Copy Items To...", action: #selector(copyItems), keyEquivalent: "")
@@ -162,8 +162,8 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         statusItem = item
     }
 
-    @objc private func showShelf() {
-        shelfWindowController.showShelf()
+    @objc private func showShelves() {
+        shelfCoordinator.showAllShelves()
     }
 
     @objc private func frontmostApplicationDidChange(_ notification: Notification) {
@@ -207,9 +207,8 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
                 finderImportLogger.info("Finder selection was empty")
                 return
             }
-            store.addFileURLs(urls)
+            shelfCoordinator.addFinderSelection(urls)
             finderImportLogger.info("Added \(urls.count) Finder selection item(s)")
-            shelfWindowController.showShelf()
         } catch {
             finderImportLogger.error("Finder selection failed: \(error.localizedDescription, privacy: .public)")
             let alert = NSAlert(error: error)
@@ -219,19 +218,19 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
     }
 
     @objc private func copyItems() {
-        store.copyItemsToChosenFolder()
+        shelfCoordinator.activeStore?.copyItemsToChosenFolder()
     }
 
     @objc private func moveItems() {
-        store.moveItemsToChosenFolder()
+        shelfCoordinator.activeStore?.moveItemsToChosenFolder()
     }
 
     @objc private func createZip() {
-        store.createZipArchive()
+        shelfCoordinator.activeStore?.createZipArchive()
     }
 
     @objc private func clearShelf() {
-        store.clear()
+        shelfCoordinator.activeStore?.clear()
     }
 
     @objc private func toggleShakeDetection() {

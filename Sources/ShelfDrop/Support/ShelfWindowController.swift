@@ -7,7 +7,8 @@ private let windowLogger = Logger(
     category: "Windowing"
 )
 
-final class ShelfWindowController: NSObject, NSWindowDelegate {
+@MainActor
+final class ShelfWindowController: NSObject, NSWindowDelegate, ShelfWindowPresenting {
     // Matches the approved menu bar glyph's measured 742 x 847 bounds.
     private static let approvedIconAspectRatio: CGFloat = 742 / 847
     private static let shelfWidth: CGFloat = 240
@@ -17,7 +18,7 @@ final class ShelfWindowController: NSObject, NSWindowDelegate {
     )
     private static let shelfOpacity: CGFloat = 0.9
 
-    private let store: ShelfStore
+    let store: ShelfStore
     private var panel: NSPanel?
     private var localKeyDownMonitor: Any?
 
@@ -25,11 +26,19 @@ final class ShelfWindowController: NSObject, NSWindowDelegate {
         self.store = store
     }
 
-    func showShelf() {
+    var isShelfVisible: Bool {
+        panel?.isVisible == true
+    }
+
+    var shelfFrame: NSRect? {
+        isShelfVisible ? panel?.frame : nil
+    }
+
+    func showShelf(avoiding occupiedFrames: [NSRect] = []) {
         let panel = shelfPanel()
 
         if !panel.isVisible {
-            positionNearPointer(panel)
+            positionNearPointer(panel, avoiding: occupiedFrames)
             startEscapeKeyMonitor()
         }
 
@@ -56,7 +65,7 @@ final class ShelfWindowController: NSObject, NSWindowDelegate {
             defer: false
         )
 
-        panel.identifier = NSUserInterfaceItemIdentifier("ShelfDropShelfPanel")
+        panel.identifier = NSUserInterfaceItemIdentifier("ShelfDropShelfPanel.\(UUID().uuidString)")
         panel.contentViewController = NSHostingController(
             rootView: ContentView(
                 store: store,
@@ -81,7 +90,7 @@ final class ShelfWindowController: NSObject, NSWindowDelegate {
         return panel
     }
 
-    private func positionNearPointer(_ panel: NSPanel) {
+    private func positionNearPointer(_ panel: NSPanel, avoiding occupiedFrames: [NSRect]) {
         let mouseLocation = NSEvent.mouseLocation
         let screen = NSScreen.screens.first { screen in
             NSMouseInRect(mouseLocation, screen.frame, false)
@@ -102,8 +111,13 @@ final class ShelfWindowController: NSObject, NSWindowDelegate {
             origin.y = mouseLocation.y + 24
         }
 
-        origin.x = min(max(origin.x, visibleFrame.minX + 8), visibleFrame.maxX - size.width - 8)
-        origin.y = min(max(origin.y, visibleFrame.minY + 8), visibleFrame.maxY - size.height - 8)
+        let insetVisibleFrame = visibleFrame.insetBy(dx: 8, dy: 8)
+        origin = ShelfPlacement.origin(
+            preferred: origin,
+            size: size,
+            visibleFrame: insetVisibleFrame,
+            occupiedFrames: occupiedFrames
+        )
 
         panel.setFrameOrigin(origin)
     }
@@ -111,8 +125,9 @@ final class ShelfWindowController: NSObject, NSWindowDelegate {
     private func startEscapeKeyMonitor() {
         stopEscapeKeyMonitor()
         localKeyDownMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            if event.keyCode == 53 {
-                self?.hideShelf()
+            guard let self else { return event }
+            if event.keyCode == 53, event.window === self.panel || self.panel?.isKeyWindow == true {
+                self.hideShelf()
                 return nil
             }
             return event
