@@ -143,6 +143,50 @@ struct ShelfStoreDocumentImportTests {
         #expect(try String(contentsOf: url, encoding: .utf8) == "name,value\nA,1")
     }
 
+    @Test(arguments: [
+        ("public.comma-separated-values-text", "table.csv", "name,value\nA,1"),
+        (UTType.json.identifier, "settings.json", "{\"enabled\":true}")
+    ])
+    func fallsBackWhenFinderFileURLRepresentationCannotBeDecoded(
+        typeIdentifier: String,
+        fileName: String,
+        contents: String
+    ) async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShelfDropFinderFallback-\(UUID().uuidString)", isDirectory: true)
+        let sourceURL = root.appendingPathComponent(fileName)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        try Data(contents.utf8).write(to: sourceURL)
+
+        let provider = NSItemProvider()
+        provider.suggestedName = fileName
+        provider.registerDataRepresentation(
+            forTypeIdentifier: UTType.fileURL.identifier,
+            visibility: .all
+        ) { completion in
+            completion(Data([0xFF]), nil)
+            return nil
+        }
+        provider.registerFileRepresentation(
+            forTypeIdentifier: typeIdentifier,
+            fileOptions: [],
+            visibility: .all
+        ) { completion in
+            completion(sourceURL, true, nil)
+            return nil
+        }
+
+        let store = ShelfStore()
+        store.importItems(from: [provider])
+        let item = try await waitForImportedItem(in: store)
+        let importedURL = try #require(item.url)
+        defer { try? FileManager.default.removeItem(at: importedURL) }
+
+        #expect(importedURL.lastPathComponent == fileName)
+        #expect(try String(contentsOf: importedURL, encoding: .utf8) == contents)
+    }
+
     @Test func importsAFileBackedFolderRepresentation() async throws {
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("ShelfDropTests-\(UUID().uuidString)", isDirectory: true)
