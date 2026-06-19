@@ -47,7 +47,9 @@ final class ShelfStore: ObservableObject {
     static let acceptedTypeIdentifiers = [
         UTType.fileURL.identifier,
         UTType.url.identifier,
-        UTType.image.identifier
+        UTType.image.identifier,
+        UTType.item.identifier,
+        UTType.data.identifier
     ] + textDataTypeIdentifiers + documentDataTypeIdentifiers + imageDataTypeIdentifiers
 
     @Published var items: [ShelfItem] = []
@@ -193,6 +195,17 @@ final class ShelfStore: ObservableObject {
             return
         }
 
+        if let suggestedName = provider.suggestedName,
+           !suggestedName.isEmpty,
+           !Self.fileDataTypeIdentifiers(from: provider).isEmpty {
+            importFileRepresentation(
+                from: provider,
+                typeIdentifiers: Self.fileDataTypeIdentifiers(from: provider),
+                suggestedName: suggestedName
+            )
+            return
+        }
+
         let documentTypes = Self.documentDataTypeIdentifiers
             + (provider.suggestedName?.lowercased().hasSuffix(".txt") == true
                 ? Self.textDataTypeIdentifiers
@@ -240,6 +253,75 @@ final class ShelfStore: ObservableObject {
                 }
             }
             return
+        }
+
+        let typeIdentifiers = Self.fileDataTypeIdentifiers(from: provider)
+        if !typeIdentifiers.isEmpty {
+            importFileRepresentation(
+                from: provider,
+                typeIdentifiers: typeIdentifiers,
+                suggestedName: nil
+            )
+        }
+    }
+
+    private func importFileRepresentation(
+        from provider: NSItemProvider,
+        typeIdentifiers: ArraySlice<String>,
+        suggestedName: String?
+    ) {
+        guard let typeIdentifier = typeIdentifiers.first else { return }
+
+        provider.loadFileRepresentation(forTypeIdentifier: typeIdentifier) { url, _ in
+            guard let url else {
+                self.importFileRepresentation(
+                    from: provider,
+                    typeIdentifiers: typeIdentifiers.dropFirst(),
+                    suggestedName: suggestedName
+                )
+                return
+            }
+
+            if url.isDirectory {
+                self.addDirectoryRepresentation(at: url, suggestedName: suggestedName)
+                return
+            }
+
+            guard let data = try? Data(contentsOf: url, options: .mappedIfSafe) else {
+                self.importFileRepresentation(
+                    from: provider,
+                    typeIdentifiers: typeIdentifiers.dropFirst(),
+                    suggestedName: suggestedName
+                )
+                return
+            }
+            Task { @MainActor in
+                self.addFileData(
+                    data,
+                    typeIdentifier: typeIdentifier,
+                    suggestedName: suggestedName
+                )
+            }
+        }
+    }
+
+    private func addDirectoryRepresentation(at sourceURL: URL, suggestedName: String?) {
+        do {
+            let directory = try fileActions.inboxDirectory()
+            let fallbackName = sourceURL.lastPathComponent.isEmpty
+                ? "Folder-\(Date().compactTimestamp())"
+                : sourceURL.lastPathComponent
+            let requestedName = suggestedName?.sanitizedFileName(defaultName: fallbackName)
+                ?? fallbackName
+            let destinationURL = directory.availableChildURL(named: requestedName)
+            try FileManager.default.copyItem(at: sourceURL, to: destinationURL)
+            Task { @MainActor in
+                self.addFileURL(destinationURL)
+            }
+        } catch {
+            Task { @MainActor in
+                self.present(error)
+            }
         }
     }
 
@@ -371,6 +453,45 @@ final class ShelfStore: ObservableObject {
         }
     }
 
+    private func addFileData(
+        _ data: Data,
+        typeIdentifier: String,
+        suggestedName: String?
+    ) {
+        let fileType = UTType(typeIdentifier)
+        let suggestedExtension = suggestedName.map {
+            URL(fileURLWithPath: $0).pathExtension
+        } ?? ""
+        let suggestedType = UTType(filenameExtension: suggestedExtension)
+        if fileType?.conforms(to: .image) == true || suggestedType?.conforms(to: .image) == true {
+            addImageData(
+                data,
+                typeIdentifier: typeIdentifier,
+                suggestedName: suggestedName
+            )
+            return
+        }
+
+        do {
+            let directory = try fileActions.inboxDirectory()
+            let fallbackName = Self.fallbackFileName(for: typeIdentifier)
+            let requestedName = suggestedName?.sanitizedFileName(defaultName: fallbackName)
+                ?? fallbackName
+            let url = directory.availableChildURL(named: requestedName)
+            try data.write(to: url, options: .atomic)
+            items.append(
+                ShelfItem(
+                    kind: .file,
+                    title: url.lastPathComponent,
+                    detail: "Imported file",
+                    url: url
+                )
+            )
+        } catch {
+            present(error)
+        }
+    }
+
     private static func file(at url: URL, hasContents data: Data) -> Bool {
         guard url.isFileURL,
               let existingData = try? Data(contentsOf: url, options: .mappedIfSafe) else {
@@ -388,6 +509,23 @@ final class ShelfStore: ObservableObject {
         default:
             return "md"
         }
+    }
+
+    private static func fileDataTypeIdentifiers(from provider: NSItemProvider) -> ArraySlice<String> {
+        provider.registeredTypeIdentifiers.filter { typeIdentifier in
+            typeIdentifier != ShelfDragPayload.typeIdentifier
+                && typeIdentifier != UTType.fileURL.identifier
+                && typeIdentifier != UTType.url.identifier
+        }[...]
+    }
+
+    private static func fallbackFileName(for typeIdentifier: String) -> String {
+        let baseName = "File-\(Date().compactTimestamp())"
+        guard let fileExtension = UTType(typeIdentifier)?.preferredFilenameExtension,
+              !fileExtension.isEmpty else {
+            return baseName
+        }
+        return "\(baseName).\(fileExtension)"
     }
 
     private static func fileName(
