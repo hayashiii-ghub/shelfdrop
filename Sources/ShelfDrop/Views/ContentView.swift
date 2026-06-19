@@ -6,30 +6,36 @@ struct ContentView: View {
     @State private var isDropTargeted = false
 
     var body: some View {
-        GlassEffectContainer(spacing: 8) {
-            VStack(spacing: 0) {
-                ShelfHeader(count: store.items.count, onDismiss: onDismiss)
+        VStack(spacing: 0) {
+            ShelfHeader(count: store.items.count, onDismiss: onDismiss)
 
-                Divider()
+            Divider()
 
-                ZStack {
-                    if store.items.isEmpty {
-                        EmptyShelfView()
-                    } else {
-                        itemList
-                    }
+            ZStack {
+                if store.items.isEmpty {
+                    EmptyShelfView()
+                } else {
+                    itemList
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(isDropTargeted ? ShelfGlassStyle.accent.opacity(0.1) : Color.clear)
-
-                Divider()
-
-                ActionBar(store: store)
             }
-            .shelfGlassPanel(isDropTargeted: isDropTargeted)
-            .onDrop(of: ShelfStore.acceptedTypeIdentifiers, isTargeted: $isDropTargeted) { providers in
-                store.handleDrop(providers: providers)
-            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(isDropTargeted ? Color.accentColor.opacity(0.12) : Color.clear)
+
+            Divider()
+
+            ActionBar(store: store)
+        }
+        .background(.regularMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(
+                    isDropTargeted ? Color.accentColor : Color.primary.opacity(0.12),
+                    lineWidth: 1
+                )
+        }
+        .onDrop(of: ShelfStore.acceptedTypeIdentifiers, isTargeted: $isDropTargeted) { providers in
+            store.handleDrop(providers: providers)
         }
     }
 
@@ -83,18 +89,15 @@ private struct ShelfHeader: View {
             Text("\(count)")
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
-                .frame(minWidth: 24, minHeight: 22)
                 .padding(.horizontal, 8)
-                .shelfGlassControl(in: Capsule())
+                .padding(.vertical, 4)
+                .background(.thinMaterial, in: Capsule())
 
             Button(action: onDismiss) {
                 Image(systemName: "xmark")
                     .font(.system(size: 12, weight: .semibold))
-                    .frame(width: 24, height: 24)
-                    .contentShape(Circle())
             }
-            .buttonStyle(.plain)
-            .shelfGlassControl(in: Circle())
+            .buttonStyle(.borderless)
             .help("Hide Shelf")
         }
         .padding(.horizontal, 14)

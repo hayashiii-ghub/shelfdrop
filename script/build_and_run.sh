@@ -4,7 +4,7 @@ set -euo pipefail
 MODE="${1:-run}"
 APP_NAME="ShelfDrop"
 BUNDLE_ID="work.hayashigoto.ShelfDrop"
-MIN_SYSTEM_VERSION="26.0"
+MIN_SYSTEM_VERSION="14.0"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$ROOT_DIR/script/version.sh"

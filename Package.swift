@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "ShelfDrop",
     platforms: [
-        .macOS("26.0")
+        .macOS(.v14)
     ],
     products: [
         .executable(name: "ShelfDrop", targets: ["ShelfDrop"])

@@ -51,7 +51,7 @@ struct ShelfItemRow: View {
         .contentShape(Rectangle())
         .padding(.horizontal, 8)
         .padding(.vertical, 7)
-        .shelfGlassItem()
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
         .contextMenu {
             Button("Open", action: onOpen)
             Button("Copy", action: onCopy)

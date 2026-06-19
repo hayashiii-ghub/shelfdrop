@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: macos-26
+    runs-on: macos-latest
 
     steps:
       - name: Check out repository
@@ -19,17 +19,3 @@ jobs:
 
       - name: Build and validate scripts
         run: make check
-
-      - name: Build installable app
-        if: github.event_name == 'pull_request'
-        env:
-          SHELFDROP_UNIVERSAL: "1"
-          SHELFDROP_VERSION: "0.2.5"
-        run: ./script/package.sh
-
-      - name: Upload installable app
-        if: github.event_name == 'pull_request'
-        uses: actions/upload-artifact@v4
-        with:
-          name: ShelfDrop-macos-pr
-          path: dist/ShelfDrop-macos.zip
