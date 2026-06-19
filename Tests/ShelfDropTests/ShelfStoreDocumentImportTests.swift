@@ -175,6 +175,38 @@ struct ShelfStoreDocumentImportTests {
         ))
     }
 
+    @Test(arguments: [
+        ("table.csv", "name,value\nA,1"),
+        ("settings.json", "{\"enabled\":true}"),
+        ("vector.svg", "<svg></svg>"),
+        ("page.html", "<h1>Page</h1>"),
+        ("notes.md", "# Notes"),
+        ("notes.txt", "Plain notes"),
+        ("archive.customext", "binary-data"),
+        ("Makefile", "build:\n\techo ok")
+    ])
+    func importsFinderStyleFileProvidersRegardlessOfExtension(
+        fileName: String,
+        contents: String
+    ) async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShelfDropFinderDrop-\(UUID().uuidString)", isDirectory: true)
+        let sourceURL = root.appendingPathComponent(fileName)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        try Data(contents.utf8).write(to: sourceURL)
+
+        let provider = try #require(NSItemProvider(contentsOf: sourceURL))
+        let store = ShelfStore()
+
+        #expect(store.handleDrop(providers: [provider]))
+        let item = try await waitForImportedItem(in: store)
+
+        #expect(item.title == fileName)
+        #expect(item.url == sourceURL.standardizedFileURL.resolvingSymlinksInPath())
+        #expect(try String(contentsOf: sourceURL, encoding: .utf8) == contents)
+    }
+
     private func assertDocumentImport(
         typeIdentifier: String,
         suggestedName: String,
