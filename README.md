@@ -1,152 +1,128 @@
-# ShelfDrop
+<p align="center">
+  <img src="Assets/ShelfDrop.png" width="160" alt="ShelfDrop app icon">
+</p>
 
-ShelfDrop は、Dropover のように使える小さな macOS 用シェルフアプリです。ファイルのドラッグ中や Finder のショートカット操作でフローティングの棚を開き、ファイルやフォルダを一時的に置いたり、コピー、移動、ZIP 化、再ドラッグできます。
+<h1 align="center">ShelfDrop</h1>
 
-## できること
+<p align="center">
+  ファイル、フォルダ、リンク、テキストを一時的に置いておける、小さなmacOS用フローティングシェルフ。
+</p>
 
-### ドラッグ中だけ棚を表示
+<p align="center">
+  <a href="https://github.com/hayashiii-ghub/shelfdrop/releases/latest"><img src="https://img.shields.io/github/v/release/hayashiii-ghub/shelfdrop?display_name=tag&sort=semver" alt="Latest release"></a>
+  <a href="https://github.com/hayashiii-ghub/shelfdrop/actions/workflows/ci.yml"><img src="https://github.com/hayashiii-ghub/shelfdrop/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
+  <img src="https://img.shields.io/badge/macOS-14%2B-black" alt="macOS 14 or later">
+  <img src="https://img.shields.io/badge/Swift-5.9%2B-F05138" alt="Swift 5.9 or later">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License"></a>
+</p>
 
-ファイルをドラッグしている時だけ、画面上に小さなフローティング棚を表示します。通常のカーソル移動やシェイクでは表示されません。
+<p align="center">
+  <a href="https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/ShelfDrop-macos.zip"><strong>最新版をダウンロード</strong></a>
+  ・
+  <a href="https://github.com/hayashiii-ghub/shelfdrop/issues">Issue</a>
+</p>
 
-### ファイルを一時的に置く
+## ShelfDropとは
 
-ドラッグ中のファイル、フォルダ、画像、リンク、テキストを棚に入れて、一時的に保持できます。複数の項目をまとめて置くこともできます。
+ShelfDropは、作業中のファイルを一時的にまとめて置くためのmacOSアプリです。Finderから別のアプリへ複数のファイルを移す時や、離れたフォルダ間でファイルを整理する時に、常に手前に表示される小さな棚として使えます。
 
-### Finder の選択項目をショートカットで追加
+Apple IDやMac App Storeを使わず、GitHub Releasesから直接ダウンロードできます。Apple Silicon MacとIntel Macの両方に対応しています。
 
-Finder でファイルやフォルダを選択して `Option + Tab` を押すと、ドラッグせずに選択項目を棚へ直接追加して表示できます。複数選択にも対応しています。
+## 主な機能
 
-初回実行時は、macOS から Finder の操作許可を求められます。許可すると、それ以降はショートカットから選択項目を取得できます。
+| 機能 | 操作 |
+| --- | --- |
+| ドラッグ中に棚を表示 | ファイルをドラッグした状態でカーソルを振る |
+| Finderの選択項目を追加 | Finderで選択して`Option + Tab` |
+| 複数項目をまとめて取り出す | フッター左端のスタックアイコンをドラッグ |
+| 項目を個別に取り出す | 棚の行をFinderや他のアプリへドラッグ |
+| コピー・移動・ZIP化 | フッターの各アイコンから実行 |
+| 開く・Finderで表示・コピー | 各行のボタンまたはコンテキストメニュー |
+| 棚を移動 | ヘッダーをそのままドラッグ |
+| 棚を隠す | `×`ボタンまたは`Escape` |
 
-### 対応している形式
+棚は表示後、閉じるまでほかのウィンドウより手前に残ります。棚内でのファイル名変更や並べ替えは行いません。
 
-Finder から扱える通常のファイルとフォルダは、拡張子を限定せず棚に入れられます。CSV、TXT、Markdown、HTML、JSON、PDF、SVG、各種画像、独自拡張子、拡張子のないファイルにも対応しています。アプリからファイル本体のデータだけが渡された場合も、提示された元のファイル名と拡張子を保って一時保存します。
+## 対応する項目
 
-### 棚から取り出す
+- 通常のファイルとフォルダ
+- CSV、TXT、Markdown、HTML、JSON、PDF、SVG
+- PNG、JPEGなどの画像
+- 独自拡張子や拡張子のないファイル
+- URLとプレーンテキスト
 
-棚に入れた項目は、もう一度ドラッグして Finder や他のアプリへ取り出せます。フッター左端のスタックアイコンをドラッグすると、棚にあるファイル、フォルダ、画像ファイルをまとめて他のウィンドウへ渡せます。リンクとテキストは個別にドラッグします。
+ファイル拡張子による制限は設けていません。アプリからファイル本体のデータだけが渡された場合も、元のファイル名と拡張子を保って一時保存します。
 
-棚の行を別の行へドラッグすると並べ替えられます。棚内でドラッグしても項目は複製されません。棚ではファイル名を変更せず、元のファイル名をそのまま表示します。
+## インストール
 
-### 開く・Finder で表示・コピーする
+1. [最新の`ShelfDrop-macos.zip`をダウンロード](https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/ShelfDrop-macos.zip)します。
+2. ZIPを展開し、`ShelfDrop.app`を`アプリケーション`フォルダへ移動します。
+3. 初回のみ、Finderで`ShelfDrop.app`をControlキーを押しながらクリックし、`開く`を選びます。
 
-棚の項目は、その場で開いたり、Finder 上の場所を表示したり、クリップボードへコピーできます。
+> [!NOTE]
+> 配布版はad hoc署名で、Apple Developer IDによる署名とnotarizationは行っていません。そのため、初回起動時にmacOSの警告が表示される場合があります。
 
-### まとめてコピー・移動・ZIP 化する
-
-フッターのコピーアイコンを押して保存先フォルダを選ぶと、棚に入っている全項目をまとめてコピーできます。コピーした後も元ファイルと棚の内容は残るため、繰り返し利用できます。同名ファイルがある場合は連番を付けて両方を保存します。
-
-ファイルを元の場所から移動する操作と、全項目をひとつの ZIP ファイルにする操作も利用できます。不要になった項目はまとめてクリアできます。
-
-### メニューバーから操作する
-
-メニューバーの ShelfDrop アイコンから、Finder の選択項目追加、棚の表示、指定フォルダへのコピー、クリア、アプリ終了を実行できます。
-
-### 棚を移動・非表示にする
-
-棚はほかのウィンドウより前面に表示され、外側をクリックしたりカーソルを離したりしても消えません。棚のヘッダー部分をドラッグすると、事前クリックなしで移動できます。`×` ボタン、または棚を操作中の Escape キーで非表示にできます。
-
-## 動作環境
-
-- macOS 14 以降
-- Xcode Command Line Tools
-- Swift 5.9 以降
-
-## ビルドして起動
-
-```sh
-./script/build_and_run.sh
-```
-
-このスクリプトは SwiftPM ターゲットをビルドし、`dist/ShelfDrop.app` を作成して、起動中の ShelfDrop を停止した上で新しいアプリを起動します。
-
-コンパイルだけ確認する場合:
-
-```sh
-swift build
-```
-
-## 別の Mac で使う
-
-GitHub Releases から `ShelfDrop-macos.zip` をダウンロードしてください。
-
-[最新版をダウンロード](https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/ShelfDrop-macos.zip)
-
-ダウンロードした zip を展開し、`ShelfDrop.app` を開きます。
-
-GitHub Release のビルドは Apple Silicon Mac と Intel Mac の両方に対応した universal アプリです。
-
-このアプリは Apple Developer ID での署名や notarization をしていないため、初回起動時に macOS Gatekeeper に止められることがあります。その場合は Finder で次の手順を使ってください。
-
-1. `ShelfDrop.app` を Control キーを押しながらクリックします。
-2. `開く` を選びます。
-3. 警告ダイアログでもう一度 `開く` を選びます。
-
-それでも「壊れているため開けません」のように表示される場合は、quarantine 属性を削除します。
+「壊れているため開けません」と表示される場合:
 
 ```sh
 xattr -dr com.apple.quarantine /Applications/ShelfDrop.app
 ```
 
-`/Applications` 以外に置いた場合は、実際のアプリのパスに置き換えてください。
+## 更新
 
-## 更新する
-
-すでに ShelfDrop を入れている Mac では、次のコマンドで最新版をダウンロードして入れ替えできます。
+ターミナルから最新版へ入れ替えられます。
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/hayashiii-ghub/shelfdrop/main/script/install_latest.sh | bash
 ```
 
-既存の `ShelfDrop.app` が `/Applications` にある場合は、そこに上書きします。`~/Applications` にある場合は、そちらを更新します。どちらにもない場合は、書き込み可能なら `/Applications`、そうでなければ `~/Applications` にインストールします。
+`/Applications`または`~/Applications`にある既存の`ShelfDrop.app`を検出して更新します。メニューバーの`Download Latest Version...`から最新版のダウンロードを開始することもできます。
 
-アプリのメニューバーから `Download Latest Version...` を選ぶと、最新版 zip のダウンロードも開始できます。
+## 権限
 
-## ターミナルで管理する
+`Option + Tab`でFinderの選択項目を取得するため、初回利用時にmacOSからFinderの操作許可を求められます。許可しない場合でも、通常のドラッグ＆ドロップは利用できます。
 
-よく使う操作は `make` から実行できます。
+## 開発
+
+必要な環境:
+
+- macOS 14以降
+- Xcode Command Line Tools
+- Swift 5.9以降
+
+ビルドして起動:
 
 ```sh
-make build
+./script/build_and_run.sh
+```
+
+テストとスクリプト検証:
+
+```sh
 make check
-make run
-make package VERSION=v0.1.7
-make install-latest
-make release VERSION=v0.1.7
-make status
 ```
 
-`make check` は Swift のテストとシェルスクリプトの構文確認を実行します。`make release VERSION=...` は、タグを作って `main` とタグを GitHub に push します。タグ push 後、GitHub Actions がタグのバージョン番号を埋め込んだ配布用 zip を作成します。
-
-`main` への push と Pull Request では GitHub Actions の CI が自動実行されます。
-
-## 配布用 zip をローカルで作る
+配布用ZIPを作成:
 
 ```sh
-./script/package.sh
+make package VERSION=v0.2.4
 ```
 
-作成されるファイル:
+主なディレクトリ:
 
 ```text
-dist/ShelfDrop-macos.zip
+Sources/ShelfDrop/    アプリ本体
+Tests/ShelfDropTests/ テスト
+Assets/               アプリ・メニューバーアイコン
+script/               ビルド、配布、更新スクリプト
 ```
 
-フル版 Xcode が入っている環境では、Apple Silicon Mac と Intel Mac の両方に対応した universal アプリを作成します。Xcode Command Line Tools だけの環境では、その Mac のアーキテクチャ向けに作成します。
+## コントリビューション
 
-## GitHub Release を作る
+バグ報告と機能提案は[Issues](https://github.com/hayashiii-ghub/shelfdrop/issues)から受け付けています。Pull Requestを送る前に[CONTRIBUTING.md](CONTRIBUTING.md)を確認してください。
 
-バージョンタグを push すると、GitHub Actions が `ShelfDrop-macos.zip` をビルドして GitHub Releases にアップロードします。
+セキュリティ上の問題は公開Issueへ詳細を書かず、[SECURITY.md](SECURITY.md)の手順で報告してください。
 
-```sh
-git tag v0.1.6
-git push origin v0.1.6
-```
+## ライセンス
 
-## メモ
-
-- 棚はファイルのドラッグ中だけ開きます。通常のカーソル操作やシェイクでは開きません。
-- Finder で項目を選択して `Option + Tab` を押すと、ドラッグせず棚へ追加できます。
-- 表示した棚は外側クリックでは消えず、`×` ボタンで非表示にできます。
-- ヘッダー部分をドラッグすると、事前クリックなしで棚を移動できます。
-- `.gitignore` により、ビルド生成物は Git 管理から除外しています。
+[MIT License](LICENSE)
