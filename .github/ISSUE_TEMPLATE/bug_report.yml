@@ -1,0 +1,73 @@
+name: バグ報告
+description: 再現可能な不具合を報告する
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        報告ありがとうございます。個人情報、アクセストークン、機密ファイルを含めないでください。
+  - type: input
+    id: shelfdrop-version
+    attributes:
+      label: ShelfDropのバージョン
+      placeholder: "例: 0.2.4"
+    validations:
+      required: true
+  - type: input
+    id: macos-version
+    attributes:
+      label: macOSのバージョン
+      placeholder: "例: macOS 15.5"
+    validations:
+      required: true
+  - type: dropdown
+    id: architecture
+    attributes:
+      label: Macの種類
+      options:
+        - Apple Silicon
+        - Intel
+        - 不明
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 再現手順
+      description: 最小限の手順を番号付きで記載してください。
+      placeholder: |
+        1. Finderで…
+        2. ShelfDropへ…
+        3. …が発生する
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待した動作
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 実際の動作
+    validations:
+      required: true
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 補足情報
+      description: 必要に応じてログやスクリーンショットを添付してください。
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 確認事項
+      options:
+        - label: 最新リリースでも再現しました
+          required: true
+        - label: 機密情報を含めていません
+          required: true
+        - label: セキュリティ上の問題ではありません
+          required: true
