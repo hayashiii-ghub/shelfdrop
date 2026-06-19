@@ -12,7 +12,8 @@ struct ShelfCoordinatorTests {
         fixture.coordinator.openShelfForDrag()
 
         #expect(fixture.windows.count == 2)
-        #expect(fixture.windows.allSatisfy(\.isShelfVisible))
+        #expect(fixture.windows[0].isShelfVisible)
+        #expect(fixture.windows[1].isShelfVisible)
         #expect(fixture.windows[0].store.items.map(\.title) == ["First"])
         #expect(fixture.windows[1].store.items.isEmpty)
     }
@@ -64,7 +65,8 @@ struct ShelfCoordinatorTests {
         fixture.coordinator.showAllShelves()
 
         #expect(fixture.windows.count == 2)
-        #expect(fixture.windows.allSatisfy(\.isShelfVisible))
+        #expect(fixture.windows[0].isShelfVisible)
+        #expect(fixture.windows[1].isShelfVisible)
     }
 
     @Test func placementMovesNewShelfBesideAnOccupiedShelf() {
