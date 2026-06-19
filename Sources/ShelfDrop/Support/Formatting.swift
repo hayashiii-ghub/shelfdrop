@@ -29,7 +29,7 @@ extension String {
         let cleaned = components.joined(separator: " ")
             .trimmingCharacters(in: .whitespacesAndNewlines)
 
-        return cleaned.isEmpty ? defaultName : cleaned
+        return cleaned.isEmpty || cleaned == "." || cleaned == ".." ? defaultName : cleaned
     }
 }
 

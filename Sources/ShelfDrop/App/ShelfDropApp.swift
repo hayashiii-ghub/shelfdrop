@@ -7,6 +7,7 @@ private let finderImportLogger = Logger(
 )
 
 @main
+@MainActor
 final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private static let bundleIdentifier = "work.hayashigoto.ShelfDrop"
     private static let shared = ShelfDropApplication()
@@ -62,6 +63,7 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         UserDefaults.standard.register(defaults: ["shakeDetectionEnabled": true])
+        store.discardStaleManagedFiles()
 
         configureStatusItem()
         NSWorkspace.shared.notificationCenter.addObserver(
@@ -94,6 +96,7 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         NSWorkspace.shared.notificationCenter.removeObserver(self)
         addFinderSelectionHotKey = nil
         shakeDetector?.stop()
+        store.clear()
     }
 
     func menuWillOpen(_ menu: NSMenu) {

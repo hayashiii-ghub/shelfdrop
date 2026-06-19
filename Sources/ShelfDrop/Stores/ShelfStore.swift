@@ -20,47 +20,47 @@ private struct FileExportSummaryError: LocalizedError {
     }
 }
 
+private struct ArchiveCreationError: LocalizedError {
+    let message: String
+
+    var errorDescription: String? {
+        "Could Not Create ZIP"
+    }
+
+    var failureReason: String? {
+        message
+    }
+}
+
+@MainActor
 final class ShelfStore: ObservableObject {
-    private static let documentDataTypeIdentifiers = [
-        "net.daringfireball.markdown",
-        "public.html"
-    ]
-
-    private static let textDataTypeIdentifiers = [
-        UTType.utf8PlainText.identifier,
-        UTType.plainText.identifier,
-        UTType.text.identifier
-    ]
-
-    private static let imageDataTypeIdentifiers = [
-        UTType.png.identifier,
-        UTType.tiff.identifier,
-        "public.jpeg",
-        "com.compuserve.gif",
-        "public.heic",
-        "public.heif",
-        "public.svg-image",
-        "com.adobe.svg",
-        "org.webmproject.webp"
-    ]
-
-    static let acceptedTypeIdentifiers = [
-        UTType.fileURL.identifier,
-        UTType.url.identifier,
-        UTType.image.identifier,
-        UTType.item.identifier,
-        UTType.data.identifier
-    ] + textDataTypeIdentifiers + documentDataTypeIdentifiers + imageDataTypeIdentifiers
+    static let acceptedTypeIdentifiers = ShelfItemImporter.acceptedTypeIdentifiers
 
     @Published var items: [ShelfItem] = []
     @Published private(set) var isExporting = false
 
     private let fileActions = FileActionService()
+    private let inbox: ShelfInbox
+    private let importer: ShelfItemImporter
+    private let errorPresenter: @MainActor (Error) -> Void
+
+    init(
+        inbox: ShelfInbox = ShelfInbox(),
+        errorPresenter: @escaping @MainActor (Error) -> Void = ShelfStore.showAlert
+    ) {
+        self.inbox = inbox
+        importer = ShelfItemImporter(inbox: inbox)
+        self.errorPresenter = errorPresenter
+    }
 
     func importItems(from providers: [NSItemProvider]) {
         for provider in providers where
             !provider.hasItemConformingToTypeIdentifier(ShelfDragPayload.typeIdentifier) {
-            importItem(from: provider)
+            importer.importItem(from: provider) { [weak self] result in
+                Task { @MainActor in
+                    self?.addImportedResult(result)
+                }
+            }
         }
     }
 
@@ -83,11 +83,23 @@ final class ShelfStore: ObservableObject {
     }
 
     func remove(_ item: ShelfItem) {
+        discardManagedFile(for: item)
         items.removeAll { $0.id == item.id }
     }
 
     func clear() {
+        for item in items {
+            discardManagedFile(for: item)
+        }
         items.removeAll()
+    }
+
+    func discardStaleManagedFiles() {
+        do {
+            try inbox.removeAllManagedItems()
+        } catch {
+            present(error)
+        }
     }
 
     func open(_ item: ShelfItem) {
@@ -157,175 +169,79 @@ final class ShelfStore: ObservableObject {
 
     func moveItemsToChosenFolder() {
         guard let destination = fileActions.chooseDestinationFolder() else { return }
-        do {
-            try fileActions.export(items: items, to: destination, mode: .move)
-            clear()
-        } catch {
-            present(error)
+        moveItems(to: destination)
+    }
+
+    func moveItems(to destination: URL) {
+        guard !items.isEmpty, !isExporting else { return }
+
+        let itemsToMove = items
+        isExporting = true
+
+        Task { @MainActor [weak self] in
+            let result = await Task.detached(priority: .userInitiated) {
+                FileActionService().exportAll(items: itemsToMove, to: destination, mode: .move)
+            }.value
+
+            guard let self else { return }
+            isExporting = false
+            let movedItemIDs = Set(result.exportedItemIDs)
+            items.removeAll { movedItemIDs.contains($0.id) }
+
+            if !result.failures.isEmpty {
+                present(FileExportSummaryError(result: result, totalCount: itemsToMove.count))
+            }
         }
     }
 
     func createZipArchive() {
         guard let destination = fileActions.chooseZipDestination() else { return }
-        do {
-            try fileActions.createZip(from: items, destination: destination)
-        } catch {
-            present(error)
+        createZip(at: destination)
+    }
+
+    func createZip(at destination: URL) {
+        guard !items.isEmpty, !isExporting else { return }
+
+        let itemsToArchive = items
+        isExporting = true
+
+        Task { @MainActor [weak self] in
+            let errorMessage = await Task.detached(priority: .userInitiated) { () -> String? in
+                do {
+                    try FileActionService().createZip(
+                        from: itemsToArchive,
+                        destination: destination
+                    )
+                    return nil
+                } catch {
+                    return error.localizedDescription
+                }
+            }.value
+
+            guard let self else { return }
+            isExporting = false
+            if let errorMessage {
+                present(ArchiveCreationError(message: errorMessage))
+            }
         }
     }
 
-    private func importItem(from provider: NSItemProvider) {
-        if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
-            provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in
-                guard let url = Self.url(from: item) else { return }
-                Task { @MainActor in
-                    self.addFileURL(url)
-                }
-            }
-            return
-        }
-
-        if provider.hasItemConformingToTypeIdentifier(UTType.url.identifier) {
-            provider.loadItem(forTypeIdentifier: UTType.url.identifier, options: nil) { item, _ in
-                guard let url = Self.url(from: item) else { return }
-                Task { @MainActor in
-                    self.addLink(url)
-                }
-            }
-            return
-        }
-
-        if let suggestedName = provider.suggestedName,
-           !suggestedName.isEmpty,
-           !Self.fileDataTypeIdentifiers(from: provider).isEmpty {
-            importFileRepresentation(
-                from: provider,
-                typeIdentifiers: Self.fileDataTypeIdentifiers(from: provider),
-                suggestedName: suggestedName
-            )
-            return
-        }
-
-        let documentTypes = Self.documentDataTypeIdentifiers
-            + (provider.suggestedName?.lowercased().hasSuffix(".txt") == true
-                ? Self.textDataTypeIdentifiers
-                : [])
-        if let typeIdentifier = documentTypes.first(where: {
-            provider.hasItemConformingToTypeIdentifier($0)
-        }) {
-            let suggestedName = provider.suggestedName
-            provider.loadDataRepresentation(forTypeIdentifier: typeIdentifier) { data, _ in
-                guard let data else { return }
-                Task { @MainActor in
-                    self.addDocumentData(
-                        data,
-                        typeIdentifier: typeIdentifier,
-                        suggestedName: suggestedName
-                    )
-                }
-            }
-            return
-        }
-
-        let imageTypes = Self.imageDataTypeIdentifiers + [UTType.image.identifier]
-        if let typeIdentifier = imageTypes.first(where: { provider.hasItemConformingToTypeIdentifier($0) }) {
-            let suggestedName = provider.suggestedName
-            provider.loadDataRepresentation(forTypeIdentifier: typeIdentifier) { data, _ in
-                guard let data else { return }
-                Task { @MainActor in
-                    self.addImageData(
-                        data,
-                        typeIdentifier: typeIdentifier,
-                        suggestedName: suggestedName
-                    )
-                }
-            }
-            return
-        }
-
-        if let typeIdentifier = Self.textDataTypeIdentifiers.first(where: {
-            provider.hasItemConformingToTypeIdentifier($0)
-        }) {
-            provider.loadItem(forTypeIdentifier: typeIdentifier, options: nil) { item, _ in
-                guard let text = Self.text(from: item) else { return }
-                Task { @MainActor in
-                    self.addText(text)
-                }
-            }
-            return
-        }
-
-        let typeIdentifiers = Self.fileDataTypeIdentifiers(from: provider)
-        if !typeIdentifiers.isEmpty {
-            importFileRepresentation(
-                from: provider,
-                typeIdentifiers: typeIdentifiers,
-                suggestedName: nil
-            )
+    private func addImportedResult(_ result: ShelfImportResult) {
+        switch result {
+        case let .file(url, isManaged, detail):
+            addFileURL(url, isManagedFile: isManaged, importedDetail: detail)
+        case let .link(url):
+            addLink(url)
+        case let .text(text):
+            addText(text)
         }
     }
 
-    private func importFileRepresentation(
-        from provider: NSItemProvider,
-        typeIdentifiers: ArraySlice<String>,
-        suggestedName: String?
+    private func addFileURL(
+        _ url: URL,
+        isManagedFile: Bool = false,
+        importedDetail: String? = nil
     ) {
-        guard let typeIdentifier = typeIdentifiers.first else { return }
-
-        provider.loadFileRepresentation(forTypeIdentifier: typeIdentifier) { url, _ in
-            guard let url else {
-                self.importFileRepresentation(
-                    from: provider,
-                    typeIdentifiers: typeIdentifiers.dropFirst(),
-                    suggestedName: suggestedName
-                )
-                return
-            }
-
-            if url.isDirectory {
-                self.addDirectoryRepresentation(at: url, suggestedName: suggestedName)
-                return
-            }
-
-            guard let data = try? Data(contentsOf: url, options: .mappedIfSafe) else {
-                self.importFileRepresentation(
-                    from: provider,
-                    typeIdentifiers: typeIdentifiers.dropFirst(),
-                    suggestedName: suggestedName
-                )
-                return
-            }
-            Task { @MainActor in
-                self.addFileData(
-                    data,
-                    typeIdentifier: typeIdentifier,
-                    suggestedName: suggestedName
-                )
-            }
-        }
-    }
-
-    private func addDirectoryRepresentation(at sourceURL: URL, suggestedName: String?) {
-        do {
-            let directory = try fileActions.inboxDirectory()
-            let fallbackName = sourceURL.lastPathComponent.isEmpty
-                ? "Folder-\(Date().compactTimestamp())"
-                : sourceURL.lastPathComponent
-            let requestedName = suggestedName?.sanitizedFileName(defaultName: fallbackName)
-                ?? fallbackName
-            let destinationURL = directory.availableChildURL(named: requestedName)
-            try FileManager.default.copyItem(at: sourceURL, to: destinationURL)
-            Task { @MainActor in
-                self.addFileURL(destinationURL)
-            }
-        } catch {
-            Task { @MainActor in
-                self.present(error)
-            }
-        }
-    }
-
-    private func addFileURL(_ url: URL) {
         let canonicalURL = url.standardizedFileURL.resolvingSymlinksInPath()
         guard !items.contains(where: { item in
             item.url?.standardizedFileURL.resolvingSymlinksInPath() == canonicalURL
@@ -342,20 +258,27 @@ final class ShelfStore: ObservableObject {
             kind = .file
         }
 
-        if kind == .image,
-           let data = try? Data(contentsOf: canonicalURL, options: .mappedIfSafe),
-           let importedIndex = items.firstIndex(where: { item in
-               item.kind == .image
-                   && item.detail == "Imported image"
-                   && item.url.map { Self.file(at: $0, hasContents: data) } == true
-           }) {
-            let importedURL = items[importedIndex].url
-            items[importedIndex].title = canonicalURL.lastPathComponent
-            items[importedIndex].detail = canonicalURL.deletingLastPathComponent().path
-            items[importedIndex].url = canonicalURL
-            if let importedURL, importedURL != canonicalURL {
-                try? FileManager.default.removeItem(at: importedURL)
+        if let importedIndex = items.firstIndex(where: { item in
+            guard (isManagedFile || item.isManagedFile),
+                  let itemURL = item.url else {
+                return false
             }
+            return inbox.contentsEqual(itemURL, canonicalURL)
+        }) {
+            if isManagedFile {
+                inbox.removeManagedItem(at: canonicalURL)
+                return
+            }
+
+            let importedURL = items[importedIndex].url
+            items[importedIndex] = ShelfItem(
+                id: items[importedIndex].id,
+                kind: kind,
+                title: canonicalURL.lastPathComponent,
+                detail: canonicalURL.deletingLastPathComponent().path,
+                url: canonicalURL
+            )
+            importedURL.map(inbox.removeManagedItem)
             return
         }
 
@@ -363,8 +286,9 @@ final class ShelfStore: ObservableObject {
             ShelfItem(
                 kind: kind,
                 title: canonicalURL.lastPathComponent,
-                detail: canonicalURL.deletingLastPathComponent().path,
-                url: canonicalURL
+                detail: importedDetail ?? canonicalURL.deletingLastPathComponent().path,
+                url: canonicalURL,
+                isManagedFile: isManagedFile
             )
         )
     }
@@ -393,211 +317,18 @@ final class ShelfStore: ObservableObject {
         )
     }
 
-    private func addDocumentData(_ data: Data, typeIdentifier: String, suggestedName: String?) {
-        do {
-            let fileExtension = Self.documentFileExtension(for: typeIdentifier)
-            let directory = try fileActions.inboxDirectory()
-            let fallbackName = "Document-\(Date().compactTimestamp()).\(fileExtension)"
-            let requestedName = Self.fileName(
-                suggestedName: suggestedName,
-                fallbackName: fallbackName,
-                fileExtension: fileExtension
-            )
-            let url = directory.availableChildURL(named: requestedName)
-            try data.write(to: url, options: .atomic)
-            items.append(
-                ShelfItem(
-                    kind: .file,
-                    title: url.lastPathComponent,
-                    detail: "Imported document",
-                    url: url
-                )
-            )
-        } catch {
-            present(error)
-        }
-    }
-
-    private func addImageData(
-        _ data: Data,
-        typeIdentifier: String,
-        suggestedName: String?
-    ) {
-        guard !items.contains(where: { item in
-            item.url.map { Self.file(at: $0, hasContents: data) } == true
-        }) else {
-            return
-        }
-
-        do {
-            let fileExtension = Self.fileExtension(for: typeIdentifier)
-            let directory = try fileActions.inboxDirectory()
-            let fallbackName = "Image-\(Date().compactTimestamp()).\(fileExtension)"
-            let requestedName = Self.fileName(
-                suggestedName: suggestedName,
-                fallbackName: fallbackName,
-                fileExtension: fileExtension
-            )
-            let url = directory.availableChildURL(named: requestedName)
-            try data.write(to: url, options: .atomic)
-            items.append(
-                ShelfItem(
-                    kind: .image,
-                    title: url.lastPathComponent,
-                    detail: "Imported image",
-                    url: url
-                )
-            )
-        } catch {
-            present(error)
-        }
-    }
-
-    private func addFileData(
-        _ data: Data,
-        typeIdentifier: String,
-        suggestedName: String?
-    ) {
-        let fileType = UTType(typeIdentifier)
-        let suggestedExtension = suggestedName.map {
-            URL(fileURLWithPath: $0).pathExtension
-        } ?? ""
-        let suggestedType = UTType(filenameExtension: suggestedExtension)
-        if fileType?.conforms(to: .image) == true || suggestedType?.conforms(to: .image) == true {
-            addImageData(
-                data,
-                typeIdentifier: typeIdentifier,
-                suggestedName: suggestedName
-            )
-            return
-        }
-
-        do {
-            let directory = try fileActions.inboxDirectory()
-            let fallbackName = Self.fallbackFileName(for: typeIdentifier)
-            let requestedName = suggestedName?.sanitizedFileName(defaultName: fallbackName)
-                ?? fallbackName
-            let url = directory.availableChildURL(named: requestedName)
-            try data.write(to: url, options: .atomic)
-            items.append(
-                ShelfItem(
-                    kind: .file,
-                    title: url.lastPathComponent,
-                    detail: "Imported file",
-                    url: url
-                )
-            )
-        } catch {
-            present(error)
-        }
-    }
-
-    private static func file(at url: URL, hasContents data: Data) -> Bool {
-        guard url.isFileURL,
-              let existingData = try? Data(contentsOf: url, options: .mappedIfSafe) else {
-            return false
-        }
-        return existingData == data
-    }
-
-    private static func documentFileExtension(for typeIdentifier: String) -> String {
-        switch typeIdentifier {
-        case "public.html":
-            return "html"
-        case UTType.utf8PlainText.identifier, UTType.plainText.identifier, UTType.text.identifier:
-            return "txt"
-        default:
-            return "md"
-        }
-    }
-
-    private static func fileDataTypeIdentifiers(from provider: NSItemProvider) -> ArraySlice<String> {
-        provider.registeredTypeIdentifiers.filter { typeIdentifier in
-            typeIdentifier != ShelfDragPayload.typeIdentifier
-                && typeIdentifier != UTType.fileURL.identifier
-                && typeIdentifier != UTType.url.identifier
-        }[...]
-    }
-
-    private static func fallbackFileName(for typeIdentifier: String) -> String {
-        let baseName = "File-\(Date().compactTimestamp())"
-        guard let fileExtension = UTType(typeIdentifier)?.preferredFilenameExtension,
-              !fileExtension.isEmpty else {
-            return baseName
-        }
-        return "\(baseName).\(fileExtension)"
-    }
-
-    private static func fileName(
-        suggestedName: String?,
-        fallbackName: String,
-        fileExtension: String
-    ) -> String {
-        guard let suggestedName, !suggestedName.isEmpty else {
-            return fallbackName
-        }
-
-        let cleanName = suggestedName.sanitizedFileName(defaultName: fallbackName)
-        if cleanName.lowercased().hasSuffix(".\(fileExtension)") {
-            return cleanName
-        }
-
-        return "\(cleanName).\(fileExtension)"
-    }
-
-    private static func fileExtension(for typeIdentifier: String) -> String {
-        switch typeIdentifier {
-        case UTType.tiff.identifier:
-            return "tiff"
-        case "public.jpeg":
-            return "jpg"
-        case "com.compuserve.gif":
-            return "gif"
-        case "public.heic":
-            return "heic"
-        case "public.heif":
-            return "heif"
-        case "public.svg-image", "com.adobe.svg":
-            return "svg"
-        case "org.webmproject.webp":
-            return "webp"
-        default:
-            return "png"
-        }
+    private func discardManagedFile(for item: ShelfItem) {
+        guard item.isManagedFile, let url = item.url else { return }
+        inbox.removeManagedItem(at: url)
     }
 
     private func present(_ error: Error) {
+        errorPresenter(error)
+    }
+
+    private static func showAlert(_ error: Error) {
         let alert = NSAlert(error: error)
         alert.runModal()
     }
 
-    private static func url(from item: NSSecureCoding?) -> URL? {
-        if let url = item as? URL {
-            return url
-        }
-        if let url = item as? NSURL {
-            return url as URL
-        }
-        if let data = item as? Data,
-           let rawValue = String(data: data, encoding: .utf8) {
-            return URL(string: rawValue.trimmingCharacters(in: .whitespacesAndNewlines))
-        }
-        if let rawValue = item as? String {
-            return URL(string: rawValue.trimmingCharacters(in: .whitespacesAndNewlines))
-        }
-        return nil
-    }
-
-    private static func text(from item: NSSecureCoding?) -> String? {
-        if let text = item as? String {
-            return text
-        }
-        if let text = item as? NSString {
-            return text as String
-        }
-        if let data = item as? Data {
-            return String(data: data, encoding: .utf8)
-        }
-        return nil
-    }
 }
