@@ -242,28 +242,6 @@
         el.style.setProperty("--my", "-10%");
       });
     });
-
-    // Hero icon parallax tilt: the .hero-art container rotates toward the cursor
-    // while the icon inside keeps floating (separate elements, no transform clash).
-    var hero = document.querySelector(".hero");
-    var heroArt = document.querySelector(".hero-art");
-    if (hero && heroArt) {
-      var tiltQueued = false, tiltX = 0, tiltY = 0;
-      hero.addEventListener("pointermove", function (e) {
-        var r = hero.getBoundingClientRect();
-        tiltY = ((e.clientX - r.left) / r.width - 0.5) * 16;
-        tiltX = -((e.clientY - r.top) / r.height - 0.5) * 16;
-        if (!tiltQueued) {
-          tiltQueued = true;
-          requestAnimationFrame(function () {
-            heroArt.style.transform =
-              "perspective(900px) rotateX(" + tiltX.toFixed(2) + "deg) rotateY(" + tiltY.toFixed(2) + "deg)";
-            tiltQueued = false;
-          });
-        }
-      });
-      hero.addEventListener("pointerleave", function () { heroArt.style.transform = ""; });
-    }
   }
 
   // ---------------------------------------------------------------------------

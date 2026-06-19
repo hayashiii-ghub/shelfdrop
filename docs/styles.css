@@ -25,8 +25,8 @@
   --maxw: 1180px;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
 
-  /* Noto Serif (Latin) falls through to Noto Serif JP for CJK glyphs: one matched superfamily */
-  --font: "Noto Serif", "Noto Serif JP", Georgia, "Hiragino Mincho ProN", "YuMincho", serif;
+  /* IBM Plex Serif for Latin, falls through to Zen Old Mincho for Japanese glyphs */
+  --font: "IBM Plex Serif", "Zen Old Mincho", Georgia, "Hiragino Mincho ProN", "YuMincho", serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
 }
 
@@ -156,7 +156,8 @@ a:focus-visible, .btn:focus-visible, .copy-btn:focus-visible {
 .lang-toggle button:hover { color: var(--text); }
 .lang-toggle button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
 
-.nav-cta { margin-left: 4px; }
+.nav-cta { margin-left: 4px; padding: 0.46rem 0.95rem; font-size: 0.84rem; }
+.nav-cta i { font-size: 1em; }
 
 /* ---------- Hero ---------- */
 .hero {
@@ -186,17 +187,13 @@ a:focus-visible, .btn:focus-visible, .copy-btn:focus-visible {
   filter: drop-shadow(0 40px 70px rgba(0, 0, 0, 0.55));
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
 }
-.float { animation: float 6s ease-in-out infinite; }
-@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
-
-/* Hero entrance (pure CSS, runs without JS). Tilt (JS) targets .hero-art;
-   the entrance animates only opacity there so it never fights the tilt transform. */
+/* Hero entrance (pure CSS, runs without JS). The icon itself is static (no float, no tilt). */
 @keyframes heroRise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 .hero-copy h1 { animation: heroRise 0.9s var(--ease) 0.05s both; }
 .hero-copy .lede { animation: heroRise 0.9s var(--ease) 0.18s both; }
 .hero-copy .hero-actions { animation: heroRise 0.9s var(--ease) 0.32s both; }
-.hero-art { animation: fadeIn 1s var(--ease) 0.15s both; will-change: transform; transition: transform 0.2s ease-out; }
+.hero-art { animation: fadeIn 1s var(--ease) 0.15s both; }
 
 /* ---------- Trust row ---------- */
 .trust {
@@ -344,7 +341,7 @@ a:focus-visible, .btn:focus-visible, .copy-btn:focus-visible {
 }
 
 /* ---------- Japanese (CJK) adjustments ---------- */
-html[lang="ja"] .hero-copy h1 { font-size: clamp(1.9rem, 4vw, 3rem); line-height: 1.24; letter-spacing: -0.01em; text-wrap: balance; }
+html[lang="ja"] .hero-copy h1 { font-size: clamp(1.8rem, 3.6vw, 2.65rem); line-height: 1.34; letter-spacing: 0.01em; }
 html[lang="ja"] .lede { max-width: 36ch; line-break: strict; }
 html[lang="ja"] .section-head h2,
 html[lang="ja"] .final h2 { line-height: 1.3; }
@@ -355,7 +352,6 @@ html[lang="ja"] .step h3 { line-height: 1.4; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .js .reveal { opacity: 1; transform: none; transition: none; }
-  .float { animation: none; }
   .hero-copy h1, .hero-copy .lede, .hero-copy .hero-actions, .hero-art {
     animation: none; opacity: 1; transform: none;
   }
