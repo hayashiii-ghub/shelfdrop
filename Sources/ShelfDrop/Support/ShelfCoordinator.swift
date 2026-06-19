@@ -60,6 +60,9 @@ final class ShelfCoordinator {
     }
 
     private func shelfForNewInput() -> any ShelfWindowPresenting {
+        if shelves.contains(where: \.isShelfVisible) {
+            return makeAndStoreShelf()
+        }
         return shelves.last ?? makeAndStoreShelf()
     }
 
