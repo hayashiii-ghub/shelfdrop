@@ -11,9 +11,22 @@ struct FileExportFailure: Sendable {
     let message: String
 }
 
+struct FileExportSuccess: Sendable {
+    let itemID: UUID
+    let url: URL
+}
+
 struct FileExportResult: Sendable {
-    let exportedURLs: [URL]
+    let successes: [FileExportSuccess]
     let failures: [FileExportFailure]
+
+    var exportedURLs: [URL] {
+        successes.map(\.url)
+    }
+
+    var exportedItemIDs: [UUID] {
+        successes.map(\.itemID)
+    }
 }
 
 struct FileActionService {
@@ -34,18 +47,6 @@ struct FileActionService {
         return panel.runModal() == .OK ? panel.url : nil
     }
 
-    func inboxDirectory() throws -> URL {
-        let baseURL = try FileManager.default.url(
-            for: .applicationSupportDirectory,
-            in: .userDomainMask,
-            appropriateFor: nil,
-            create: true
-        )
-        let directory = baseURL.appendingPathComponent("ShelfDrop/Inbox", isDirectory: true)
-        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        return directory
-    }
-
     func export(items: [ShelfItem], to destination: URL, mode: FileActionMode) throws {
         for item in items {
             _ = try export(item: item, to: destination, mode: mode)
@@ -53,12 +54,13 @@ struct FileActionService {
     }
 
     func exportAll(items: [ShelfItem], to destination: URL, mode: FileActionMode) -> FileExportResult {
-        var exportedURLs: [URL] = []
+        var successes: [FileExportSuccess] = []
         var failures: [FileExportFailure] = []
 
         for item in items {
             do {
-                exportedURLs.append(try export(item: item, to: destination, mode: mode))
+                let url = try export(item: item, to: destination, mode: mode)
+                successes.append(FileExportSuccess(itemID: item.id, url: url))
             } catch {
                 failures.append(
                     FileExportFailure(
@@ -69,7 +71,10 @@ struct FileActionService {
             }
         }
 
-        return FileExportResult(exportedURLs: exportedURLs, failures: failures)
+        return FileExportResult(
+            successes: successes,
+            failures: failures
+        )
     }
 
     func createZip(from items: [ShelfItem], destination: URL) throws {
@@ -83,8 +88,10 @@ struct FileActionService {
 
         try export(items: items, to: stagingItems, mode: .copy)
 
-        if FileManager.default.fileExists(atPath: destination.path) {
-            try FileManager.default.removeItem(at: destination)
+        let temporaryDestination = destination.deletingLastPathComponent()
+            .appendingPathComponent(".ShelfDrop-\(UUID().uuidString).zip")
+        defer {
+            try? FileManager.default.removeItem(at: temporaryDestination)
         }
 
         let process = Process()
@@ -95,7 +102,7 @@ struct FileActionService {
             "--sequesterRsrc",
             "--keepParent",
             stagingItems.path,
-            destination.path
+            temporaryDestination.path
         ]
 
         try process.run()
@@ -103,6 +110,15 @@ struct FileActionService {
 
         guard process.terminationStatus == 0 else {
             throw CocoaError(.fileWriteUnknown)
+        }
+
+        if FileManager.default.fileExists(atPath: destination.path) {
+            _ = try FileManager.default.replaceItemAt(
+                destination,
+                withItemAt: temporaryDestination
+            )
+        } else {
+            try FileManager.default.moveItem(at: temporaryDestination, to: destination)
         }
     }
 
@@ -117,11 +133,7 @@ struct FileActionService {
             case .copy:
                 try FileManager.default.copyItem(at: source, to: target)
             case .move:
-                if item.kind == .image {
-                    try FileManager.default.copyItem(at: source, to: target)
-                } else {
-                    try FileManager.default.moveItem(at: source, to: target)
-                }
+                try FileManager.default.moveItem(at: source, to: target)
             }
             return target
         case .link:

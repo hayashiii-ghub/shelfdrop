@@ -13,7 +13,7 @@ struct ContentView: View {
 
             ZStack {
                 if store.items.isEmpty {
-                    EmptyShelfView(isTargeted: isDropTargeted)
+                    EmptyShelfView()
                 } else {
                     itemList
                 }
@@ -106,23 +106,12 @@ private struct ShelfHeader: View {
 }
 
 private struct EmptyShelfView: View {
-    let isTargeted: Bool
-
     var body: some View {
-        VStack(spacing: 12) {
-            Image(systemName: isTargeted ? "arrow.down.doc" : "tray")
-                .font(.system(size: 44, weight: .regular))
-                .foregroundStyle(isTargeted ? Color.accentColor : Color.secondary)
-
-            Text(isTargeted ? "Drop to Shelf" : "Empty Shelf")
-                .font(.headline)
-
-            Text("Drag files, folders, links, or text here.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 22)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        Text("Drag files, folders, links, or text here.")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 22)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

@@ -4,6 +4,7 @@ import Testing
 import UniformTypeIdentifiers
 @testable import ShelfDrop
 
+@MainActor
 struct ShelfDragTests {
     @Test func droppingShelfItemBackOntoShelfIsRejectedWithoutChangingItems() {
         let first = ShelfItem(kind: .file, title: "first.txt", detail: "")

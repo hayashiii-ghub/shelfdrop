@@ -23,6 +23,7 @@ APP_ICON="$ROOT_DIR/Assets/ShelfDrop.icns"
 MENU_BAR_ICON="$ROOT_DIR/Assets/MenuBarTemplate.png"
 ZIP_PATH="$DIST_DIR/$APP_NAME-macos.zip"
 SWIFTPM_CACHE_DIR="$ROOT_DIR/.build/cache"
+VALIDATION_DIR="$STAGING_DIR/validation"
 
 trap 'rm -rf "$STAGING_DIR"' EXIT
 
@@ -100,9 +101,15 @@ codesign --verify --deep --strict "$APP_BUNDLE"
 
 mkdir -p "$DIST_DIR"
 COPYFILE_DISABLE=1 ditto -c -k --keepParent --norsrc --noextattr --noqtn --noacl "$APP_BUNDLE" "$ZIP_PATH"
+mkdir -p "$VALIDATION_DIR"
+ditto -x -k "$ZIP_PATH" "$VALIDATION_DIR"
+codesign --verify --deep --strict "$VALIDATION_DIR/$APP_NAME.app"
 
 mkdir -p "$DIST_PACKAGE_DIR"
 COPYFILE_DISABLE=1 ditto --norsrc --noextattr --noqtn --noacl \
   "$APP_BUNDLE" "$DIST_PACKAGE_DIR/$APP_NAME.app"
+xattr -cr "$DIST_PACKAGE_DIR/$APP_NAME.app" 2>/dev/null || true
+codesign --force --sign - "$DIST_PACKAGE_DIR/$APP_NAME.app"
+codesign --verify --deep --strict "$DIST_PACKAGE_DIR/$APP_NAME.app"
 
 echo "$ZIP_PATH"

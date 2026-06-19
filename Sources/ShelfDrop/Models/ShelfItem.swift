@@ -1,6 +1,6 @@
 import Foundation
 
-enum ShelfItemKind: String, Codable, CaseIterable, Sendable {
+enum ShelfItemKind: Sendable {
     case file
     case folder
     case link
@@ -23,14 +23,14 @@ enum ShelfItemKind: String, Codable, CaseIterable, Sendable {
     }
 }
 
-struct ShelfItem: Identifiable, Codable, Equatable, Sendable {
+struct ShelfItem: Identifiable, Equatable, Sendable {
     var id: UUID
     var kind: ShelfItemKind
     var title: String
     var detail: String
     var url: URL?
     var text: String?
-    var createdAt: Date
+    var isManagedFile: Bool
 
     init(
         id: UUID = UUID(),
@@ -39,7 +39,7 @@ struct ShelfItem: Identifiable, Codable, Equatable, Sendable {
         detail: String,
         url: URL? = nil,
         text: String? = nil,
-        createdAt: Date = Date()
+        isManagedFile: Bool = false
     ) {
         self.id = id
         self.kind = kind
@@ -47,6 +47,6 @@ struct ShelfItem: Identifiable, Codable, Equatable, Sendable {
         self.detail = detail
         self.url = url
         self.text = text
-        self.createdAt = createdAt
+        self.isManagedFile = isManagedFile
     }
 }
