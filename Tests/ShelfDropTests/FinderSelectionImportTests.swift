@@ -23,6 +23,36 @@ struct FinderSelectionImportTests {
         #expect(store.items.map(\.url) == [fileURL, folderURL])
     }
 
+    @Test func addsFilesWithoutFilteringByExtension() throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ShelfDropTests-\(UUID().uuidString)", isDirectory: true)
+        let fileNames = [
+            "table.csv",
+            "vector.svg",
+            "page.html",
+            "notes.txt",
+            "report.pdf",
+            "settings.json",
+            "archive.customext",
+            "Makefile",
+            ".env"
+        ]
+        defer { try? FileManager.default.removeItem(at: root) }
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        let fileURLs = try fileNames.map { fileName in
+            let url = root.appendingPathComponent(fileName)
+            try Data(fileName.utf8).write(to: url)
+            return url
+        }
+
+        let store = ShelfStore()
+        store.addFileURLs(fileURLs)
+
+        #expect(store.items.map(\.title) == fileNames)
+        #expect(store.items.map(\.url) == fileURLs)
+        #expect(store.items.count == fileNames.count)
+    }
+
     @Test func convertsAppleEventListItemsWithoutJoiningPaths() {
         let descriptor = NSAppleEventDescriptor.list()
         descriptor.insert(NSAppleEventDescriptor(string: "/tmp/first item.md"), at: 1)
