@@ -4,69 +4,76 @@ import Testing
 
 @MainActor
 struct ShelfCoordinatorTests {
-    @Test func dragShakeCreatesIndependentShelfWhenOneIsVisible() {
+    @Test func dragShakeCreatesIndependentShelfWhenOneIsVisible() throws {
         let fixture = Fixture()
 
         fixture.coordinator.openShelfForDrag()
-        fixture.windows[0].store.items = [ShelfItem(kind: .text, title: "First", detail: "", text: "First")]
+        let firstWindow = try fixture.window(at: 0)
+        firstWindow.store.items = [ShelfItem(kind: .text, title: "First", detail: "", text: "First")]
         fixture.coordinator.openShelfForDrag()
+        let secondWindow = try fixture.window(at: 1)
 
         #expect(fixture.windows.count == 2)
-        #expect(fixture.windows[0].isShelfVisible)
-        #expect(fixture.windows[1].isShelfVisible)
-        #expect(fixture.windows[0].store.items.map(\.title) == ["First"])
-        #expect(fixture.windows[1].store.items.isEmpty)
+        #expect(firstWindow.isShelfVisible)
+        #expect(secondWindow.isShelfVisible)
+        #expect(firstWindow.store.items.map(\.title) == ["First"])
+        #expect(secondWindow.store.items.isEmpty)
     }
 
-    @Test func finderSelectionCreatesIndependentShelfWhenOneIsVisible() {
+    @Test func finderSelectionCreatesIndependentShelfWhenOneIsVisible() throws {
         let fixture = Fixture()
         let firstURL = URL(fileURLWithPath: "/tmp/first.txt")
         let secondURL = URL(fileURLWithPath: "/tmp/second.md")
 
         fixture.coordinator.addFinderSelection([firstURL])
         fixture.coordinator.addFinderSelection([secondURL])
+        let firstWindow = try fixture.window(at: 0)
+        let secondWindow = try fixture.window(at: 1)
 
         #expect(fixture.windows.count == 2)
-        #expect(fixture.windows[0].store.items.map(\.title) == ["first.txt"])
-        #expect(fixture.windows[1].store.items.map(\.title) == ["second.md"])
+        #expect(firstWindow.store.items.map(\.title) == ["first.txt"])
+        #expect(secondWindow.store.items.map(\.title) == ["second.md"])
     }
 
-    @Test func reusesMostRecentShelfWhenNoShelfIsVisible() {
+    @Test func reusesMostRecentShelfWhenNoShelfIsVisible() throws {
         let fixture = Fixture()
 
         fixture.coordinator.openShelfForDrag()
-        fixture.windows[0].hideShelf()
+        let window = try fixture.window(at: 0)
+        window.hideShelf()
         fixture.coordinator.openShelfForDrag()
 
         #expect(fixture.windows.count == 1)
-        #expect(fixture.windows[0].showCount == 2)
-        #expect(fixture.windows[0].isShelfVisible)
+        #expect(window.showCount == 2)
+        #expect(window.isShelfVisible)
     }
 
-    @Test func activeStoreTracksMostRecentVisibleShelf() {
+    @Test func activeStoreTracksMostRecentVisibleShelf() throws {
         let fixture = Fixture()
 
         fixture.coordinator.openShelfForDrag()
         let firstStore = fixture.coordinator.activeStore!
         fixture.coordinator.openShelfForDrag()
         let secondStore = fixture.coordinator.activeStore!
-        fixture.windows[1].hideShelf()
+        try fixture.window(at: 1).hideShelf()
 
         #expect(firstStore !== secondStore)
         #expect(fixture.coordinator.activeStore! === firstStore)
     }
 
-    @Test func showAllShelvesRestoresEveryHiddenShelf() {
+    @Test func showAllShelvesRestoresEveryHiddenShelf() throws {
         let fixture = Fixture()
 
         fixture.coordinator.openShelfForDrag()
         fixture.coordinator.openShelfForDrag()
         fixture.windows.forEach { $0.hideShelf() }
         fixture.coordinator.showAllShelves()
+        let firstWindow = try fixture.window(at: 0)
+        let secondWindow = try fixture.window(at: 1)
 
         #expect(fixture.windows.count == 2)
-        #expect(fixture.windows[0].isShelfVisible)
-        #expect(fixture.windows[1].isShelfVisible)
+        #expect(firstWindow.isShelfVisible)
+        #expect(secondWindow.isShelfVisible)
     }
 
     @Test func placementMovesNewShelfBesideAnOccupiedShelf() {
@@ -91,6 +98,17 @@ private final class Fixture {
         windows.append(window)
         return window
     }
+
+    func window(at index: Int) throws -> FakeShelfWindow {
+        guard windows.indices.contains(index) else {
+            throw MissingShelfWindow(index: index)
+        }
+        return windows[index]
+    }
+}
+
+private struct MissingShelfWindow: Error {
+    let index: Int
 }
 
 @MainActor
