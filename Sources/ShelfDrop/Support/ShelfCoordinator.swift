@@ -24,7 +24,7 @@ final class ShelfCoordinator {
     }
 
     var activeStore: ShelfStore? {
-        shelves.last?.store
+        shelves.last(where: \.isShelfVisible)?.store ?? shelves.last?.store
     }
 
     func discardStaleManagedFiles() {
@@ -48,7 +48,9 @@ final class ShelfCoordinator {
             return
         }
 
-        shelves.last.map(show)
+        for shelf in shelves {
+            show(shelf)
+        }
     }
 
     func clearAll() {
@@ -58,7 +60,7 @@ final class ShelfCoordinator {
     }
 
     private func shelfForNewInput() -> any ShelfWindowPresenting {
-        makeAndStoreShelf()
+        return shelves.last ?? makeAndStoreShelf()
     }
 
     private func makeAndStoreShelf() -> any ShelfWindowPresenting {
@@ -87,8 +89,6 @@ enum ShelfPlacement {
         occupiedFrames: [NSRect]
     ) -> NSPoint {
         let preferred = clamped(preferred, size: size, to: visibleFrame)
-        return preferred
-#if false
         guard overlaps(preferred, size: size, occupiedFrames: occupiedFrames) else {
             return preferred
         }
@@ -114,7 +114,6 @@ enum ShelfPlacement {
             y: preferred.y - CGFloat(occupiedFrames.count * 24)
         )
         return clamped(cascade, size: size, to: visibleFrame)
-#endif
     }
 
     private static func overlaps(
