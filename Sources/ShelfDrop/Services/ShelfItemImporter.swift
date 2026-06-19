@@ -50,10 +50,19 @@ struct ShelfItemImporter {
         from provider: NSItemProvider,
         completion: @escaping (ShelfImportResult) -> Void
     ) {
+        let fileTypeIdentifiers = Self.fileTypeIdentifiers(from: provider)
+
         if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
             provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in
-                guard let url = Self.url(from: item) else { return }
-                completion(.file(url: url, isManaged: false, detail: nil))
+                if let url = Self.url(from: item), url.isFileURL {
+                    completion(.file(url: url, isManaged: false, detail: nil))
+                } else {
+                    importFallbackFileRepresentation(
+                        from: provider,
+                        typeIdentifiers: fileTypeIdentifiers,
+                        completion: completion
+                    )
+                }
             }
             return
         }
@@ -66,7 +75,6 @@ struct ShelfItemImporter {
             return
         }
 
-        let fileTypeIdentifiers = Self.fileTypeIdentifiers(from: provider)
         if let suggestedName = provider.suggestedName,
            !suggestedName.isEmpty,
            !fileTypeIdentifiers.isEmpty {
@@ -121,6 +129,22 @@ struct ShelfItemImporter {
             from: provider,
             typeIdentifiers: fileTypeIdentifiers,
             requestedName: Self.fallbackFileName(for: typeIdentifier),
+            completion: completion
+        )
+    }
+
+    private func importFallbackFileRepresentation(
+        from provider: NSItemProvider,
+        typeIdentifiers: ArraySlice<String>,
+        completion: @escaping (ShelfImportResult) -> Void
+    ) {
+        guard let typeIdentifier = typeIdentifiers.first else { return }
+        let requestedName = provider.suggestedName.flatMap { $0.isEmpty ? nil : $0 }
+            ?? Self.fallbackFileName(for: typeIdentifier)
+        importFileRepresentation(
+            from: provider,
+            typeIdentifiers: typeIdentifiers,
+            requestedName: requestedName,
             completion: completion
         )
     }
