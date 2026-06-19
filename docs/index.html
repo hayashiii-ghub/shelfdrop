@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ShelfDrop - A floating shelf for your Mac</title>
+  <meta name="description" data-i18n-meta="desc" content="ShelfDrop is a small floating shelf for macOS that holds files, folders, links, and text the moment you start dragging, then drops them wherever you need." />
+
+  <meta property="og:title" content="ShelfDrop - A floating shelf for your Mac" />
+  <meta property="og:description" content="Park files, folders, links, and text the instant you start dragging, then drop them wherever you need them." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="assets/shelfdrop-icon.png" />
+
+  <link rel="icon" type="image/png" href="assets/shelfdrop-icon.png" />
+  <link rel="apple-touch-icon" href="assets/shelfdrop-icon.png" />
+
+  <!-- Icons: Phosphor (allowed icon library), loaded from CDN -->
+  <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+
+  <!-- Fonts: Noto Serif (Latin) + Noto Serif JP, a matched serif superfamily -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&family=Noto+Serif+JP:wght@400;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
+
+  <!-- top sentinel: drives the nav background without a scroll listener -->
+  <div id="top-sentinel" aria-hidden="true"></div>
+
+  <header class="nav" id="nav">
+    <div class="nav-inner">
+      <a class="brand" href="#" aria-label="ShelfDrop home">
+        <img src="assets/shelfdrop-icon.png" alt="" width="28" height="28" />
+        <span>ShelfDrop</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#features" data-i18n="nav.features">Features</a>
+        <a href="#how" data-i18n="nav.how">How it works</a>
+        <a href="https://github.com/hayashiii-ghub/shelfdrop">GitHub</a>
+      </nav>
+      <div class="lang-toggle" role="group" aria-label="Language">
+        <button type="button" data-lang="en" aria-pressed="true">EN</button>
+        <button type="button" data-lang="ja" aria-pressed="false">日本語</button>
+      </div>
+      <a class="btn btn-primary nav-cta" href="https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/ShelfDrop-macos.zip">
+        <i class="ph ph-download-simple" aria-hidden="true"></i> <span data-i18n="cta.download">Download for macOS</span>
+      </a>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- HERO: asymmetric split, real icon asset -->
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div class="hero-copy">
+          <h1 data-i18n="hero.h1">A floating shelf<br />for your Mac.</h1>
+          <p class="lede" data-i18n="hero.lede">
+            Park files, folders, links, and text the instant you start dragging,
+            then drop them wherever you need them.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/ShelfDrop-macos.zip">
+              <i class="ph ph-download-simple" aria-hidden="true"></i> <span data-i18n="cta.download">Download for macOS</span>
+            </a>
+            <a class="btn btn-ghost" href="https://github.com/hayashiii-ghub/shelfdrop">
+              <i class="ph ph-github-logo" aria-hidden="true"></i> <span data-i18n="cta.github">View on GitHub</span>
+            </a>
+          </div>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="hero-glow"></div>
+          <img class="float" src="assets/shelfdrop-icon.png" alt="" width="320" height="320" />
+        </div>
+      </div>
+    </section>
+
+    <!-- TRUST ROW: inline strip, no cards -->
+    <section class="trust wrap reveal" aria-label="At a glance">
+      <div class="trust-item">
+        <i class="ph ph-git-branch" aria-hidden="true"></i>
+        <span data-i18n="trust.1">Free and open source</span>
+      </div>
+      <div class="trust-item">
+        <i class="ph ph-download-simple" aria-hidden="true"></i>
+        <span data-i18n="trust.2">Direct download, no App Store</span>
+      </div>
+      <div class="trust-item">
+        <i class="ph ph-cpu" aria-hidden="true"></i>
+        <span data-i18n="trust.3">Apple Silicon and Intel</span>
+      </div>
+      <div class="trust-item">
+        <i class="ph ph-apple-logo" aria-hidden="true"></i>
+        <span data-i18n="trust.4">Built for macOS 14 and later</span>
+      </div>
+    </section>
+
+    <!-- FEATURES: asymmetric bento -->
+    <section class="section wrap" id="features">
+      <div class="section-head reveal">
+        <span class="eyebrow" data-i18n="feat.eyebrow">What it does</span>
+        <h2 data-i18n="feat.h2">Everything stays one shake away.</h2>
+      </div>
+
+      <div class="bento">
+        <article class="cell glass glass--accent lg reveal">
+          <i class="ph ph-magic-wand cell-icon" aria-hidden="true"></i>
+          <h3 data-i18n="feat.1.t">Shake to summon</h3>
+          <p data-i18n="feat.1.b">Start dragging anything, give your cursor a quick shake, and the shelf slides in right where you are.</p>
+        </article>
+
+        <article class="cell glass reveal">
+          <i class="ph ph-selection-plus cell-icon" aria-hidden="true"></i>
+          <h3 data-i18n="feat.2.t">Grab from Finder</h3>
+          <p data-i18n="feat.2.b">Select items in Finder and press Option and Tab to send them straight to the shelf.</p>
+        </article>
+
+        <article class="cell glass reveal">
+          <i class="ph ph-push-pin cell-icon" aria-hidden="true"></i>
+          <h3 data-i18n="feat.3.t">Always on top</h3>
+          <p data-i18n="feat.3.b">Once open, the shelf stays above every other window until you close it.</p>
+        </article>
+
+        <article class="cell glass reveal">
+          <i class="ph ph-stack cell-icon" aria-hidden="true"></i>
+          <h3 data-i18n="feat.4.t">Take one or take all</h3>
+          <p data-i18n="feat.4.b">Drag a single row out, or pull the whole stack at once from the footer.</p>
+        </article>
+
+        <article class="cell glass reveal">
+          <i class="ph ph-hand-grabbing cell-icon" aria-hidden="true"></i>
+          <h3 data-i18n="feat.5.t">Drag out anywhere</h3>
+          <p data-i18n="feat.5.b">Drop items into any app or folder, exactly like dragging from Finder.</p>
+        </article>
+
+        <article class="cell glass glass--accent lg reveal">
+          <i class="ph ph-file-archive cell-icon" aria-hidden="true"></i>
+          <h3 data-i18n="feat.6.t">Copy, move, or zip</h3>
+          <p data-i18n="feat.6.b">Act on everything on the shelf from the footer: copy somewhere, move it, or bundle it into a single zip.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS: vertical numbered timeline -->
+    <section class="section wrap" id="how">
+      <div class="section-head reveal">
+        <h2 data-i18n="how.h2">Three moves, no window juggling.</h2>
+      </div>
+
+      <ol class="steps">
+        <li class="step reveal">
+          <span class="num">1</span>
+          <div>
+            <h3 data-i18n="step.1.t">Drag</h3>
+            <p data-i18n="step.1.b">Start dragging any files, from Finder or any other app.</p>
+          </div>
+        </li>
+        <li class="step reveal">
+          <span class="num">2</span>
+          <div>
+            <h3 data-i18n="step.2.t">Shake</h3>
+            <p data-i18n="step.2.b">Wiggle your cursor. The shelf appears and you drop everything in.</p>
+          </div>
+        </li>
+        <li class="step reveal">
+          <span class="num">3</span>
+          <div>
+            <h3 data-i18n="step.3.t">Drop</h3>
+            <p data-i18n="step.3.b">Later, drag items out to their destination, one by one or all together.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <!-- SUPPORTED ITEMS: chip cloud -->
+    <section class="section wrap supported">
+      <div class="section-head reveal">
+        <h2 data-i18n="sup.h2">No file-type limits.</h2>
+        <p class="section-sub" data-i18n="sup.sub">If you can drag it, the shelf can hold it.</p>
+      </div>
+      <div class="chips reveal">
+        <span class="chip" data-i18n="chip.files">Files</span>
+        <span class="chip" data-i18n="chip.folders">Folders</span>
+        <span class="chip" data-i18n="chip.images">Images (PNG, JPEG)</span>
+        <span class="chip">PDF</span>
+        <span class="chip">Markdown</span>
+        <span class="chip">CSV</span>
+        <span class="chip">JSON</span>
+        <span class="chip">HTML</span>
+        <span class="chip">SVG</span>
+        <span class="chip" data-i18n="chip.text">Plain text</span>
+        <span class="chip" data-i18n="chip.urls">URLs</span>
+        <span class="chip" data-i18n="chip.noext">No-extension files</span>
+        <span class="chip" data-i18n="chip.custom">Custom extensions</span>
+      </div>
+    </section>
+
+    <!-- INSTALL -->
+    <section class="section wrap install" id="install">
+      <div class="section-head reveal">
+        <span class="eyebrow" data-i18n="inst.eyebrow">Get started</span>
+        <h2 data-i18n="inst.h2">Up and running in a minute.</h2>
+      </div>
+
+      <div class="install-grid">
+        <ol class="install-steps reveal">
+          <li data-i18n="inst.s1"><a href="https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/ShelfDrop-macos.zip">Download the latest <code>ShelfDrop-macos.zip</code></a>.</li>
+          <li data-i18n="inst.s2">Unzip it and move <code>ShelfDrop.app</code> into Applications.</li>
+          <li data-i18n="inst.s3">On first launch, Control-click the app and choose Open.</li>
+        </ol>
+
+        <aside class="note glass reveal">
+          <p class="note-title"><i class="ph ph-info" aria-hidden="true"></i> <span data-i18n="note.title">First-launch warning</span></p>
+          <p data-i18n="note.p1">Builds are ad-hoc signed, not notarized, so macOS may warn the first time. If you see "ShelfDrop is damaged," clear the quarantine flag:</p>
+          <div class="code-block">
+            <pre class="code" tabindex="0"><code>xattr -dr com.apple.quarantine /Applications/ShelfDrop.app</code></pre>
+            <button class="copy-btn" type="button" aria-label="Copy command"><i class="ph ph-copy" aria-hidden="true"></i></button>
+          </div>
+          <p class="note-foot" data-i18n="note.foot">Already installed? Update from the terminal:</p>
+          <div class="code-block">
+            <pre class="code" tabindex="0"><code>curl -fsSL https://raw.githubusercontent.com/hayashiii-ghub/shelfdrop/main/script/install_latest.sh | bash</code></pre>
+            <button class="copy-btn" type="button" aria-label="Copy command"><i class="ph ph-copy" aria-hidden="true"></i></button>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="section wrap">
+      <div class="final glass reveal">
+        <h2 data-i18n="final.h2">Keep your next drop one shake away.</h2>
+        <div class="hero-actions center">
+          <a class="btn btn-primary" href="https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/ShelfDrop-macos.zip">
+            <i class="ph ph-download-simple" aria-hidden="true"></i> <span data-i18n="cta.download">Download for macOS</span>
+          </a>
+          <a class="btn btn-ghost" href="https://github.com/hayashiii-ghub/shelfdrop">
+            <i class="ph ph-github-logo" aria-hidden="true"></i> <span data-i18n="cta.github">View on GitHub</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <div class="footer-brand">
+        <img src="assets/shelfdrop-icon.png" alt="" width="24" height="24" />
+        <span>ShelfDrop</span>
+      </div>
+      <nav class="footer-links" aria-label="Footer">
+        <a href="https://github.com/hayashiii-ghub/shelfdrop">GitHub</a>
+        <a href="https://github.com/hayashiii-ghub/shelfdrop/releases/latest" data-i18n="foot.releases">Releases</a>
+        <a href="https://github.com/hayashiii-ghub/shelfdrop/issues" data-i18n="foot.issue">Report an issue</a>
+      </nav>
+      <div class="footer-meta">
+        <span data-i18n="foot.mit">MIT License</span>
+        <span data-i18n="foot.apple">Not affiliated with Apple Inc.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
