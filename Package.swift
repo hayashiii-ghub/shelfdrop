@@ -1,11 +1,11 @@
-// swift-tools-version: 6.2
+// swift-tools-version: 5.9
 
 import PackageDescription
 
 let package = Package(
     name: "ShelfDrop",
     platforms: [
-        .macOS(.v26)
+        .macOS("26.0")
     ],
     products: [
         .executable(name: "ShelfDrop", targets: ["ShelfDrop"])
