@@ -24,12 +24,16 @@ enum ShelfFileDropReader {
 }
 
 final class ShelfFileDropHostingView: NSHostingView<ContentView> {
-    private let onFileURLs: ([URL]) -> Void
+    private var onFileURLs: ([URL]) -> Void = { _ in }
 
-    init(rootView: ContentView, onFileURLs: @escaping ([URL]) -> Void) {
-        self.onFileURLs = onFileURLs
+    required init(rootView: ContentView) {
         super.init(rootView: rootView)
         registerForDraggedTypes([.fileURL])
+    }
+
+    convenience init(rootView: ContentView, onFileURLs: @escaping ([URL]) -> Void) {
+        self.init(rootView: rootView)
+        self.onFileURLs = onFileURLs
     }
 
     @available(*, unavailable)

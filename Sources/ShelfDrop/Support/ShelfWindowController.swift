@@ -65,7 +65,9 @@ final class ShelfWindowController: NSObject, NSWindowDelegate {
                 }
             ),
             onFileURLs: { [weak self] urls in
-                self?.store.addFileURLs(urls)
+                Task { @MainActor in
+                    self?.store.addFileURLs(urls)
+                }
             }
         )
         contentView.frame = NSRect(origin: .zero, size: size)
