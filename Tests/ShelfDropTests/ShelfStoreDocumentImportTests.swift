@@ -152,15 +152,16 @@ struct ShelfStoreDocumentImportTests {
         fileName: String,
         contents: String
     ) async throws {
+        let uniqueFileName = "\(UUID().uuidString)-\(fileName)"
         let root = FileManager.default.temporaryDirectory
             .appendingPathComponent("ShelfDropFinderFallback-\(UUID().uuidString)", isDirectory: true)
-        let sourceURL = root.appendingPathComponent(fileName)
+        let sourceURL = root.appendingPathComponent(uniqueFileName)
         defer { try? FileManager.default.removeItem(at: root) }
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         try Data(contents.utf8).write(to: sourceURL)
 
         let provider = NSItemProvider()
-        provider.suggestedName = fileName
+        provider.suggestedName = uniqueFileName
         provider.registerDataRepresentation(
             forTypeIdentifier: UTType.fileURL.identifier,
             visibility: .all
@@ -183,7 +184,7 @@ struct ShelfStoreDocumentImportTests {
         let importedURL = try #require(item.url)
         defer { try? FileManager.default.removeItem(at: importedURL) }
 
-        #expect(importedURL.lastPathComponent == fileName)
+        #expect(importedURL.lastPathComponent == uniqueFileName)
         #expect(try String(contentsOf: importedURL, encoding: .utf8) == contents)
     }
 
