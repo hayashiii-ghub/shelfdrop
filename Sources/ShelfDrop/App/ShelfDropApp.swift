@@ -22,14 +22,13 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
     private let store = ShelfStore()
     private let finderSelectionReader = FinderSelectionReader()
     private lazy var shelfWindowController = ShelfWindowController(store: store)
-    private var shakeDetector: ShakeDetector?
     private var addFinderSelectionHotKey: GlobalHotKey?
+    private var showShelfHotKey: GlobalHotKey?
     private var statusItem: NSStatusItem?
     private var copyMenuItem: NSMenuItem?
     private var moveMenuItem: NSMenuItem?
     private var zipMenuItem: NSMenuItem?
     private var clearMenuItem: NSMenuItem?
-    private var shakeMenuItem: NSMenuItem?
 
     static func main() {
         guard let instanceGuard = SingleInstanceGuard(identifier: bundleIdentifier) else {
@@ -62,10 +61,12 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        UserDefaults.standard.register(defaults: ["shakeDetectionEnabled": true])
         store.discardStaleManagedFiles()
 
         configureStatusItem()
+        showShelfHotKey = GlobalHotKey(shortcut: .showShelf) { [weak self] in
+            self?.shelfWindowController.showShelf()
+        }
         NSWorkspace.shared.notificationCenter.addObserver(
             self,
             selector: #selector(frontmostApplicationDidChange),
@@ -75,27 +76,12 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         updateFinderSelectionHotKey(
             frontmostBundleIdentifier: NSWorkspace.shared.frontmostApplication?.bundleIdentifier
         )
-
-        let detector = ShakeDetector { [weak self] in
-            self?.shelfWindowController.showShelf()
-        }
-        detector.start()
-        shakeDetector = detector
-
-        if CommandLine.arguments.contains("--simulate-shake-on-launch") {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                detector.triggerForVerification()
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-                detector.triggerForVerification()
-            }
-        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
         NSWorkspace.shared.notificationCenter.removeObserver(self)
         addFinderSelectionHotKey = nil
-        shakeDetector?.stop()
+        showShelfHotKey = nil
         store.clear()
     }
 
@@ -106,7 +92,6 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         moveMenuItem?.isEnabled = canManageItems
         zipMenuItem?.isEnabled = canManageItems
         clearMenuItem?.isEnabled = canManageItems
-        shakeMenuItem?.state = UserDefaults.standard.bool(forKey: "shakeDetectionEnabled") ? .on : .off
     }
 
     private func configureStatusItem() {
@@ -124,7 +109,13 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         )
         addSelectionItem.keyEquivalentModifierMask = [.option]
         menu.addItem(addSelectionItem)
-        menu.addItem(NSMenuItem(title: "Show Shelf", action: #selector(showShelf), keyEquivalent: ""))
+        let showShelfItem = NSMenuItem(
+            title: "Show Shelf",
+            action: #selector(showShelf),
+            keyEquivalent: "\t"
+        )
+        showShelfItem.keyEquivalentModifierMask = [.option, .shift]
+        menu.addItem(showShelfItem)
         menu.addItem(.separator())
 
         let copyItem = NSMenuItem(title: "Copy Items To...", action: #selector(copyItems), keyEquivalent: "")
@@ -138,10 +129,6 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         menu.addItem(zipItem)
 
         menu.addItem(.separator())
-
-        let shakeItem = NSMenuItem(title: "Shake Detection", action: #selector(toggleShakeDetection), keyEquivalent: "")
-        shakeMenuItem = shakeItem
-        menu.addItem(shakeItem)
 
         let clearItem = NSMenuItem(title: "Clear Shelf", action: #selector(clearShelf), keyEquivalent: "")
         clearMenuItem = clearItem
@@ -178,7 +165,7 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         )
 
         if shouldEnable, addFinderSelectionHotKey == nil {
-            addFinderSelectionHotKey = GlobalHotKey { [weak self] in
+            addFinderSelectionHotKey = GlobalHotKey(shortcut: .addFinderSelection) { [weak self] in
                 self?.addFinderSelection()
             }
             if addFinderSelectionHotKey == nil {
@@ -232,11 +219,6 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
 
     @objc private func clearShelf() {
         store.clear()
-    }
-
-    @objc private func toggleShakeDetection() {
-        let defaults = UserDefaults.standard
-        defaults.set(!defaults.bool(forKey: "shakeDetectionEnabled"), forKey: "shakeDetectionEnabled")
     }
 
     @objc private func downloadLatestVersion() {

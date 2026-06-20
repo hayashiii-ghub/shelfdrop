@@ -7,14 +7,52 @@ private let shortcutLogger = Logger(
     category: "Shortcuts"
 )
 
-final class GlobalHotKey {
-    private static let identifier = EventHotKeyID(signature: 0x53484450, id: 1)
+enum ShelfShortcut {
+    case addFinderSelection
+    case showShelf
 
+    private static let signature: OSType = 0x53484450
+
+    var keyCode: UInt32 {
+        UInt32(kVK_Tab)
+    }
+
+    var modifiers: UInt32 {
+        switch self {
+        case .addFinderSelection:
+            UInt32(optionKey)
+        case .showShelf:
+            UInt32(optionKey | shiftKey)
+        }
+    }
+
+    var identifier: EventHotKeyID {
+        switch self {
+        case .addFinderSelection:
+            EventHotKeyID(signature: Self.signature, id: 1)
+        case .showShelf:
+            EventHotKeyID(signature: Self.signature, id: 2)
+        }
+    }
+
+    var logName: String {
+        switch self {
+        case .addFinderSelection:
+            "Option-Tab"
+        case .showShelf:
+            "Option-Shift-Tab"
+        }
+    }
+}
+
+final class GlobalHotKey {
     private var hotKeyReference: EventHotKeyRef?
     private var eventHandlerReference: EventHandlerRef?
+    private let shortcut: ShelfShortcut
     private let action: () -> Void
 
-    init?(optionTabAction action: @escaping () -> Void) {
+    init?(shortcut: ShelfShortcut, action: @escaping () -> Void) {
+        self.shortcut = shortcut
         self.action = action
 
         var eventType = EventTypeSpec(
@@ -41,9 +79,9 @@ final class GlobalHotKey {
         guard handlerStatus == noErr else { return nil }
 
         let registrationStatus = RegisterEventHotKey(
-            UInt32(kVK_Tab),
-            UInt32(optionKey),
-            Self.identifier,
+            shortcut.keyCode,
+            shortcut.modifiers,
+            shortcut.identifier,
             GetApplicationEventTarget(),
             0,
             &hotKeyReference
@@ -68,7 +106,7 @@ final class GlobalHotKey {
     }
 
     private func performAction() {
-        shortcutLogger.info("Option-Tab received")
+        shortcutLogger.info("\(self.shortcut.logName, privacy: .public) received")
         DispatchQueue.main.async {
             self.action()
         }

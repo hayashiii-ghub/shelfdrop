@@ -90,7 +90,7 @@ case "$MODE" in
     /usr/bin/log stream --info --style compact --predicate "subsystem == \"$BUNDLE_ID\""
     ;;
   --verify|verify)
-    open_app --simulate-shake-on-launch
+    open_app
     sleep 1
     pgrep -x "$APP_NAME" >/dev/null
     ;;
