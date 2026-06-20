@@ -1,4 +1,5 @@
 import AppKit
+import Carbon.HIToolbox
 import Foundation
 import Testing
 @testable import ShelfDrop
@@ -71,5 +72,16 @@ struct FinderSelectionImportTests {
             frontmostBundleIdentifier: "com.apple.TextEdit"
         ))
         #expect(!FinderShortcutAvailability.isEnabled(frontmostBundleIdentifier: nil))
+    }
+
+    @Test func definesSeparateAddAndShowShelfShortcuts() {
+        let addSelection = ShelfShortcut.addFinderSelection
+        let showShelf = ShelfShortcut.showShelf
+
+        #expect(addSelection.keyCode == UInt32(kVK_Tab))
+        #expect(addSelection.modifiers == UInt32(optionKey))
+        #expect(showShelf.keyCode == UInt32(kVK_Tab))
+        #expect(showShelf.modifiers == UInt32(optionKey | shiftKey))
+        #expect(addSelection.identifier.id != showShelf.identifier.id)
     }
 }
