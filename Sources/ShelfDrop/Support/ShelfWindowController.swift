@@ -57,15 +57,20 @@ final class ShelfWindowController: NSObject, NSWindowDelegate {
         )
 
         panel.identifier = NSUserInterfaceItemIdentifier("ShelfDropShelfPanel")
-        panel.contentViewController = NSHostingController(
+        let contentView = ShelfFileDropHostingView(
             rootView: ContentView(
                 store: store,
                 onDismiss: { [weak self] in
                     self?.hideShelf()
                 }
-            )
-                .frame(width: size.width, height: size.height)
+            ),
+            onFileURLs: { [weak self] urls in
+                self?.store.addFileURLs(urls)
+            }
         )
+        contentView.frame = NSRect(origin: .zero, size: size)
+        contentView.autoresizingMask = [.width, .height]
+        panel.contentView = contentView
         panel.backgroundColor = .clear
         panel.alphaValue = Self.shelfOpacity
         panel.isOpaque = false
