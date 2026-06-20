@@ -9,7 +9,7 @@ private let shortcutLogger = Logger(
 
 enum ShelfShortcut {
     case addFinderSelection
-    case showShelf
+    case toggleShelf
 
     private static let signature: OSType = 0x53484450
 
@@ -21,7 +21,7 @@ enum ShelfShortcut {
         switch self {
         case .addFinderSelection:
             UInt32(optionKey)
-        case .showShelf:
+        case .toggleShelf:
             UInt32(optionKey | shiftKey)
         }
     }
@@ -30,7 +30,7 @@ enum ShelfShortcut {
         switch self {
         case .addFinderSelection:
             EventHotKeyID(signature: Self.signature, id: 1)
-        case .showShelf:
+        case .toggleShelf:
             EventHotKeyID(signature: Self.signature, id: 2)
         }
     }
@@ -39,7 +39,7 @@ enum ShelfShortcut {
         switch self {
         case .addFinderSelection:
             "Option-Tab"
-        case .showShelf:
+        case .toggleShelf:
             "Option-Shift-Tab"
         }
     }

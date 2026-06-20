@@ -23,7 +23,7 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
     private let finderSelectionReader = FinderSelectionReader()
     private lazy var shelfWindowController = ShelfWindowController(store: store)
     private var addFinderSelectionHotKey: GlobalHotKey?
-    private var showShelfHotKey: GlobalHotKey?
+    private var toggleShelfHotKey: GlobalHotKey?
     private var statusItem: NSStatusItem?
     private var copyMenuItem: NSMenuItem?
     private var moveMenuItem: NSMenuItem?
@@ -64,8 +64,8 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         store.discardStaleManagedFiles()
 
         configureStatusItem()
-        showShelfHotKey = GlobalHotKey(shortcut: .showShelf) { [weak self] in
-            self?.shelfWindowController.showShelf()
+        toggleShelfHotKey = GlobalHotKey(shortcut: .toggleShelf) { [weak self] in
+            self?.shelfWindowController.toggleShelf()
         }
         NSWorkspace.shared.notificationCenter.addObserver(
             self,
@@ -81,7 +81,7 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
     func applicationWillTerminate(_ notification: Notification) {
         NSWorkspace.shared.notificationCenter.removeObserver(self)
         addFinderSelectionHotKey = nil
-        showShelfHotKey = nil
+        toggleShelfHotKey = nil
         store.clear()
     }
 
@@ -109,13 +109,13 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         )
         addSelectionItem.keyEquivalentModifierMask = [.option]
         menu.addItem(addSelectionItem)
-        let showShelfItem = NSMenuItem(
-            title: "Show Shelf",
-            action: #selector(showShelf),
+        let toggleShelfItem = NSMenuItem(
+            title: "Toggle Shelf",
+            action: #selector(toggleShelf),
             keyEquivalent: "\t"
         )
-        showShelfItem.keyEquivalentModifierMask = [.option, .shift]
-        menu.addItem(showShelfItem)
+        toggleShelfItem.keyEquivalentModifierMask = [.option, .shift]
+        menu.addItem(toggleShelfItem)
         menu.addItem(.separator())
 
         let copyItem = NSMenuItem(title: "Copy Items To...", action: #selector(copyItems), keyEquivalent: "")
@@ -149,8 +149,8 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         statusItem = item
     }
 
-    @objc private func showShelf() {
-        shelfWindowController.showShelf()
+    @objc private func toggleShelf() {
+        shelfWindowController.toggleShelf()
     }
 
     @objc private func frontmostApplicationDidChange(_ notification: Notification) {
