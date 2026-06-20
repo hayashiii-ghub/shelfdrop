@@ -22,6 +22,14 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
     private let store = ShelfStore()
     private let finderSelectionReader = FinderSelectionReader()
     private lazy var shelfWindowController = ShelfWindowController(store: store)
+    private lazy var shortcutRouter = ShelfShortcutRouter(
+        addFinderSelection: { [weak self] in
+            self?.addFinderSelection()
+        },
+        toggleShelf: { [weak self] in
+            self?.shelfWindowController.toggleShelf()
+        }
+    )
     private var addFinderSelectionHotKey: GlobalHotKey?
     private var toggleShelfHotKey: GlobalHotKey?
     private var statusItem: NSStatusItem?
@@ -65,7 +73,7 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
 
         configureStatusItem()
         toggleShelfHotKey = GlobalHotKey(shortcut: .toggleShelf) { [weak self] in
-            self?.shelfWindowController.toggleShelf()
+            self?.shortcutRouter.perform(.toggleShelf)
         }
         NSWorkspace.shared.notificationCenter.addObserver(
             self,
@@ -166,7 +174,7 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
 
         if shouldEnable, addFinderSelectionHotKey == nil {
             addFinderSelectionHotKey = GlobalHotKey(shortcut: .addFinderSelection) { [weak self] in
-                self?.addFinderSelection()
+                self?.shortcutRouter.perform(.addFinderSelection)
             }
             if addFinderSelectionHotKey == nil {
                 finderImportLogger.error("Could not register the Option-Tab shortcut")

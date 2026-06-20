@@ -45,6 +45,20 @@ enum ShelfShortcut {
     }
 }
 
+struct ShelfShortcutRouter {
+    let addFinderSelection: () -> Void
+    let toggleShelf: () -> Void
+
+    func perform(_ shortcut: ShelfShortcut) {
+        switch shortcut {
+        case .addFinderSelection:
+            addFinderSelection()
+        case .toggleShelf:
+            toggleShelf()
+        }
+    }
+}
+
 final class GlobalHotKey {
     private var hotKeyReference: EventHotKeyRef?
     private var eventHandlerReference: EventHandlerRef?
