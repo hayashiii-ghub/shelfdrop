@@ -74,14 +74,14 @@ struct FinderSelectionImportTests {
         #expect(!FinderShortcutAvailability.isEnabled(frontmostBundleIdentifier: nil))
     }
 
-    @Test func definesSeparateAddAndShowShelfShortcuts() {
+    @Test func definesSeparateAddAndToggleShelfShortcuts() {
         let addSelection = ShelfShortcut.addFinderSelection
-        let showShelf = ShelfShortcut.showShelf
+        let toggleShelf = ShelfShortcut.toggleShelf
 
         #expect(addSelection.keyCode == UInt32(kVK_Tab))
         #expect(addSelection.modifiers == UInt32(optionKey))
-        #expect(showShelf.keyCode == UInt32(kVK_Tab))
-        #expect(showShelf.modifiers == UInt32(optionKey | shiftKey))
-        #expect(addSelection.identifier.id != showShelf.identifier.id)
+        #expect(toggleShelf.keyCode == UInt32(kVK_Tab))
+        #expect(toggleShelf.modifiers == UInt32(optionKey | shiftKey))
+        #expect(addSelection.identifier.id != toggleShelf.identifier.id)
     }
 }
