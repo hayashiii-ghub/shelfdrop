@@ -7,7 +7,8 @@ build:
 
 check:
 	./script/test.sh
-	bash -n script/build_and_run.sh script/package.sh script/install_latest.sh script/test.sh script/version.sh
+	./script/test_install_latest.sh
+	bash -n script/build_and_run.sh script/package.sh script/install_latest.sh script/test.sh script/test_install_latest.sh script/version.sh
 
 run:
 	./script/build_and_run.sh

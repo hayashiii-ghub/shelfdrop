@@ -107,7 +107,7 @@ private struct ShelfHeader: View {
 
 private struct EmptyShelfView: View {
     var body: some View {
-        Text("Drag files, folders, links, or text here.")
+        Text("Drop links, images, or text here.")
             .font(.caption)
             .foregroundStyle(.secondary)
             .multilineTextAlignment(.center)

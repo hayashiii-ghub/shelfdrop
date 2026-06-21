@@ -23,6 +23,29 @@ enum ShelfItemKind: Sendable {
     }
 }
 
+enum ShelfItemSecondaryAction: Equatable {
+    case copy
+    case reveal
+
+    var systemImage: String {
+        switch self {
+        case .copy:
+            "doc.on.clipboard"
+        case .reveal:
+            "magnifyingglass"
+        }
+    }
+
+    var help: String {
+        switch self {
+        case .copy:
+            "Copy"
+        case .reveal:
+            "Reveal"
+        }
+    }
+}
+
 struct ShelfItem: Identifiable, Equatable, Sendable {
     var id: UUID
     var kind: ShelfItemKind
@@ -48,5 +71,14 @@ struct ShelfItem: Identifiable, Equatable, Sendable {
         self.url = url
         self.text = text
         self.isManagedFile = isManagedFile
+    }
+
+    var secondaryAction: ShelfItemSecondaryAction {
+        switch kind {
+        case .file, .folder, .image:
+            .reveal
+        case .link, .text:
+            .copy
+        }
     }
 }

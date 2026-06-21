@@ -2,6 +2,7 @@
 set -euo pipefail
 
 APP_NAME="ShelfDrop"
+BUNDLE_ID="work.hayashigoto.ShelfDrop"
 ZIP_URL="https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/ShelfDrop-macos.zip"
 TMP_DIR="$(mktemp -d)"
 ZIP_PATH="$TMP_DIR/$APP_NAME-macos.zip"
@@ -11,6 +12,23 @@ cleanup() {
   rm -rf "$TMP_DIR"
 }
 trap cleanup EXIT
+
+validate_app() {
+  local app="$1"
+  local info_plist="$app/Contents/Info.plist"
+  local executable_name
+  local version
+
+  [[ -d "$app" && -f "$info_plist" ]] || return 1
+  [[ "$(plutil -extract CFBundleIdentifier raw "$info_plist" 2>/dev/null)" == "$BUNDLE_ID" ]] || return 1
+
+  executable_name="$(plutil -extract CFBundleExecutable raw "$info_plist" 2>/dev/null)"
+  [[ -n "$executable_name" && -x "$app/Contents/MacOS/$executable_name" ]] || return 1
+
+  version="$(plutil -extract CFBundleShortVersionString raw "$info_plist" 2>/dev/null)"
+  [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || return 1
+  codesign --verify --deep --strict "$app"
+}
 
 choose_install_dir() {
   if [[ -n "${SHELFDROP_INSTALL_DIR:-}" ]]; then
@@ -40,33 +58,80 @@ install_app() {
   local source_app="$1"
   local destination_app="$2"
   local install_dir
+  local staged_app
+  local backup_app
+  local use_sudo=0
   install_dir="$(dirname "$destination_app")"
+  staged_app="$install_dir/.$APP_NAME.app.new.$$"
+  backup_app="$install_dir/.$APP_NAME.app.backup.$$"
 
-  if [[ -w "$install_dir" ]]; then
-    rm -rf "$destination_app"
-    ditto "$source_app" "$destination_app"
-    xattr -dr com.apple.quarantine "$destination_app" 2>/dev/null || true
-    return
+  if [[ ! -w "$install_dir" ]]; then
+    use_sudo=1
+    echo "Installing to $install_dir requires administrator permission."
   fi
 
-  echo "Installing to $install_dir requires administrator permission."
-  sudo rm -rf "$destination_app"
-  sudo ditto "$source_app" "$destination_app"
-  sudo xattr -dr com.apple.quarantine "$destination_app" 2>/dev/null || true
+  run_install() {
+    if (( use_sudo )); then
+      sudo "$@"
+    else
+      "$@"
+    fi
+  }
+
+  rollback_install() {
+    if [[ -e "$backup_app" ]]; then
+      if [[ -e "$destination_app" ]]; then
+        run_install rm -rf "$backup_app"
+      else
+        run_install mv "$backup_app" "$destination_app"
+      fi
+    fi
+    run_install rm -rf "$staged_app"
+  }
+
+  trap 'rollback_install; exit 130' HUP INT TERM
+
+  run_install rm -rf "$staged_app" "$backup_app"
+  run_install ditto "$source_app" "$staged_app"
+  if ! validate_app "$staged_app"; then
+    run_install rm -rf "$staged_app"
+    echo "Staged ShelfDrop.app failed validation" >&2
+    return 1
+  fi
+
+  if [[ -e "$destination_app" ]]; then
+    run_install mv "$destination_app" "$backup_app"
+  fi
+
+  if ! run_install mv "$staged_app" "$destination_app"; then
+    if [[ -e "$backup_app" ]]; then
+      run_install mv "$backup_app" "$destination_app"
+    fi
+    return 1
+  fi
+
+  run_install rm -rf "$backup_app"
+  run_install xattr -dr com.apple.quarantine "$destination_app" 2>/dev/null || true
+  trap - HUP INT TERM
 }
 
 INSTALL_DIR="$(choose_install_dir)"
 DESTINATION_APP="$INSTALL_DIR/$APP_NAME.app"
 
-echo "Downloading latest $APP_NAME..."
-curl -L --fail -A "Mozilla/5.0" -o "$ZIP_PATH" "$ZIP_URL"
+if [[ -n "${SHELFDROP_ZIP_PATH:-}" ]]; then
+  echo "Using local $APP_NAME archive..."
+  cp "$SHELFDROP_ZIP_PATH" "$ZIP_PATH"
+else
+  echo "Downloading latest $APP_NAME..."
+  curl -L --fail -A "Mozilla/5.0" -o "$ZIP_PATH" "$ZIP_URL"
+fi
 
 mkdir -p "$EXTRACT_DIR"
 ditto -x -k "$ZIP_PATH" "$EXTRACT_DIR"
 
 SOURCE_APP="$EXTRACT_DIR/$APP_NAME.app"
-if [[ ! -d "$SOURCE_APP" ]]; then
-  echo "Downloaded archive did not contain $APP_NAME.app" >&2
+if ! validate_app "$SOURCE_APP"; then
+  echo "Downloaded archive did not contain a valid $APP_NAME.app" >&2
   exit 1
 fi
 
