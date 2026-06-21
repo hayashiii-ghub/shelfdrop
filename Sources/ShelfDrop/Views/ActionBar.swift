@@ -9,6 +9,16 @@ struct ActionBar: View {
                 fileURLs: store.isExporting ? [] : store.items.batchDragFileURLs
             )
             .frame(width: 24, height: 24)
+            .disabled(store.items.isEmpty || store.isExporting)
+
+            Button {
+                store.addClipboardText(NSPasteboard.general.string(forType: .string))
+            } label: {
+                Label("Add Clipboard Text", systemImage: "doc.on.clipboard")
+            }
+            .frame(width: 24, height: 24)
+            .help("Add Clipboard Text")
+            .disabled(store.isExporting)
 
             Button {
                 store.copyItemsToChosenFolder()
@@ -22,6 +32,7 @@ struct ActionBar: View {
             }
             .frame(width: 24, height: 24)
             .help("Copy All to Folder")
+            .disabled(store.items.isEmpty || store.isExporting)
 
             Button {
                 store.moveItemsToChosenFolder()
@@ -30,6 +41,7 @@ struct ActionBar: View {
             }
             .frame(width: 24, height: 24)
             .help("Move All to Folder")
+            .disabled(store.items.isEmpty || store.isExporting)
 
             Button {
                 store.createZipArchive()
@@ -38,6 +50,7 @@ struct ActionBar: View {
             }
             .frame(width: 24, height: 24)
             .help("Create ZIP Archive")
+            .disabled(store.items.isEmpty || store.isExporting)
 
             Spacer()
 
@@ -48,12 +61,12 @@ struct ActionBar: View {
             }
             .frame(width: 24, height: 24)
             .help("Clear Shelf")
+            .disabled(store.items.isEmpty || store.isExporting)
         }
         .font(.system(size: 14, weight: .medium))
         .buttonStyle(.borderless)
         .labelStyle(.iconOnly)
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .disabled(store.items.isEmpty || store.isExporting)
     }
 }

@@ -116,6 +116,13 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         )
         toggleShelfItem.keyEquivalentModifierMask = [.option, .shift]
         menu.addItem(toggleShelfItem)
+        menu.addItem(
+            NSMenuItem(
+                title: "Add Clipboard Text",
+                action: #selector(addClipboardText),
+                keyEquivalent: ""
+            )
+        )
         menu.addItem(.separator())
 
         let copyItem = NSMenuItem(title: "Copy Items To...", action: #selector(copyItems), keyEquivalent: "")
@@ -151,6 +158,11 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
 
     @objc private func toggleShelf() {
         shelfWindowController.toggleShelf()
+    }
+
+    @objc private func addClipboardText() {
+        guard store.addClipboardText(NSPasteboard.general.string(forType: .string)) else { return }
+        shelfWindowController.showShelf()
     }
 
     @objc private func frontmostApplicationDidChange(_ notification: Notification) {
