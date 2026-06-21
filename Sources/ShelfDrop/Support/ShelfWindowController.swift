@@ -37,6 +37,14 @@ final class ShelfWindowController: NSObject, NSWindowDelegate {
         windowLogger.info("Shelf shown")
     }
 
+    func toggleShelf() {
+        if panel?.isVisible == true {
+            hideShelf()
+        } else {
+            showShelf()
+        }
+    }
+
     func hideShelf() {
         panel?.orderOut(nil)
         stopEscapeKeyMonitor()

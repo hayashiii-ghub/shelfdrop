@@ -1,4 +1,5 @@
 import AppKit
+import Carbon.HIToolbox
 import Foundation
 import Testing
 @testable import ShelfDrop
@@ -71,5 +72,33 @@ struct FinderSelectionImportTests {
             frontmostBundleIdentifier: "com.apple.TextEdit"
         ))
         #expect(!FinderShortcutAvailability.isEnabled(frontmostBundleIdentifier: nil))
+    }
+
+    @Test func definesSeparateAddAndToggleShelfShortcuts() {
+        let addSelection = ShelfShortcut.addFinderSelection
+        let toggleShelf = ShelfShortcut.toggleShelf
+
+        #expect(addSelection.keyCode == UInt32(kVK_Tab))
+        #expect(addSelection.modifiers == UInt32(optionKey))
+        #expect(toggleShelf.keyCode == UInt32(kVK_Tab))
+        #expect(toggleShelf.modifiers == UInt32(optionKey | shiftKey))
+        #expect(addSelection.identifier.id != toggleShelf.identifier.id)
+    }
+
+    @Test func toggleShortcutOnlyChangesShelfVisibility() {
+        var importedFinderSelection = false
+        var isShelfVisible = false
+        let router = ShelfShortcutRouter(
+            addFinderSelection: { importedFinderSelection = true },
+            toggleShelf: { isShelfVisible.toggle() }
+        )
+
+        router.perform(.toggleShelf)
+        #expect(isShelfVisible)
+        #expect(!importedFinderSelection)
+
+        router.perform(.toggleShelf)
+        #expect(!isShelfVisible)
+        #expect(!importedFinderSelection)
     }
 }
