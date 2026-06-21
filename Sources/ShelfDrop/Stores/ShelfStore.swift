@@ -82,6 +82,18 @@ final class ShelfStore: ObservableObject {
         }
     }
 
+    @discardableResult
+    func addClipboardText(_ text: String?) -> Bool {
+        guard let text,
+              !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              !items.contains(where: { $0.kind == .text && $0.text == text }) else {
+            return false
+        }
+
+        addText(text)
+        return true
+    }
+
     func remove(_ item: ShelfItem) {
         discardManagedFile(for: item)
         items.removeAll { $0.id == item.id }
