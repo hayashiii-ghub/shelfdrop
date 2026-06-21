@@ -36,11 +36,17 @@ struct ShelfItemRow: View {
             .buttonStyle(.borderless)
             .help("Open")
 
-            Button(action: onReveal) {
-                Image(systemName: item.url == nil ? "doc.on.clipboard" : "magnifyingglass")
+            Button {
+                if item.secondaryAction == .copy {
+                    onCopy()
+                } else {
+                    onReveal()
+                }
+            } label: {
+                Image(systemName: item.secondaryAction.systemImage)
             }
             .buttonStyle(.borderless)
-            .help(item.url == nil ? "Copy" : "Reveal")
+            .help(item.secondaryAction.help)
 
             Button(role: .destructive, action: onRemove) {
                 Image(systemName: "xmark.circle")
@@ -55,7 +61,9 @@ struct ShelfItemRow: View {
         .contextMenu {
             Button("Open", action: onOpen)
             Button("Copy", action: onCopy)
-            Button("Reveal", action: onReveal)
+            if item.secondaryAction == .reveal {
+                Button("Reveal", action: onReveal)
+            }
             Divider()
             Button("Remove", role: .destructive, action: onRemove)
         }

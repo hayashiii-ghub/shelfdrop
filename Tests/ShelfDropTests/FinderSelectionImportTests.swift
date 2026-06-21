@@ -83,22 +83,9 @@ struct FinderSelectionImportTests {
         #expect(toggleShelf.keyCode == UInt32(kVK_Tab))
         #expect(toggleShelf.modifiers == UInt32(optionKey | shiftKey))
         #expect(addSelection.identifier.id != toggleShelf.identifier.id)
-    }
-
-    @Test func toggleShortcutOnlyChangesShelfVisibility() {
-        var importedFinderSelection = false
-        var isShelfVisible = false
-        let router = ShelfShortcutRouter(
-            addFinderSelection: { importedFinderSelection = true },
-            toggleShelf: { isShelfVisible.toggle() }
-        )
-
-        router.perform(.toggleShelf)
-        #expect(isShelfVisible)
-        #expect(!importedFinderSelection)
-
-        router.perform(.toggleShelf)
-        #expect(!isShelfVisible)
-        #expect(!importedFinderSelection)
+        #expect(addSelection.matches(addSelection.identifier))
+        #expect(!addSelection.matches(toggleShelf.identifier))
+        #expect(toggleShelf.matches(toggleShelf.identifier))
+        #expect(!toggleShelf.matches(addSelection.identifier))
     }
 }

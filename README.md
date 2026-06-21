@@ -82,7 +82,7 @@ curl -fsSL https://raw.githubusercontent.com/hayashiii-ghub/shelfdrop/main/scrip
 
 ## 権限
 
-`Option + Tab`でFinderの選択項目を取得するため、初回利用時にmacOSからFinderの操作許可を求められます。許可しない場合でも、通常のドラッグ＆ドロップは利用できます。
+`Option + Tab`でFinderの選択項目を取得するため、初回利用時にmacOSからFinderの操作許可を求められます。Finderのファイルとフォルダは`Option + Tab`で追加し、リンク・画像・テキストはドラッグ＆ドロップでも追加できます。
 
 ## 開発
 

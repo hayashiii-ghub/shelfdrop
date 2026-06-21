@@ -43,19 +43,10 @@ enum ShelfShortcut {
             "Option-Shift-Tab"
         }
     }
-}
 
-struct ShelfShortcutRouter {
-    let addFinderSelection: () -> Void
-    let toggleShelf: () -> Void
-
-    func perform(_ shortcut: ShelfShortcut) {
-        switch shortcut {
-        case .addFinderSelection:
-            addFinderSelection()
-        case .toggleShelf:
-            toggleShelf()
-        }
+    func matches(_ identifier: EventHotKeyID) -> Bool {
+        let expected = self.identifier
+        return identifier.signature == expected.signature && identifier.id == expected.id
     }
 }
 
@@ -76,12 +67,27 @@ final class GlobalHotKey {
         let context = Unmanaged.passUnretained(self).toOpaque()
         let handlerStatus = InstallEventHandler(
             GetApplicationEventTarget(),
-            { _, _, context in
-                guard let context else { return OSStatus(eventNotHandledErr) }
-                Unmanaged<GlobalHotKey>
+            { _, event, context in
+                guard let event, let context else { return OSStatus(eventNotHandledErr) }
+                let hotKey = Unmanaged<GlobalHotKey>
                     .fromOpaque(context)
                     .takeUnretainedValue()
-                    .performAction()
+
+                var identifier = EventHotKeyID()
+                let status = GetEventParameter(
+                    event,
+                    EventParamName(kEventParamDirectObject),
+                    EventParamType(typeEventHotKeyID),
+                    nil,
+                    MemoryLayout<EventHotKeyID>.size,
+                    nil,
+                    &identifier
+                )
+                guard status == noErr, hotKey.shortcut.matches(identifier) else {
+                    return OSStatus(eventNotHandledErr)
+                }
+
+                hotKey.performAction()
                 return noErr
             },
             1,
