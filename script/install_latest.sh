@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-APP_NAME="ShelfDrop"
-BUNDLE_ID="work.hayashigoto.ShelfDrop"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source "$ROOT_DIR/script/app_bundle.sh"
+
+APP_NAME="$SHELFDROP_APP_NAME"
+BUNDLE_ID="$SHELFDROP_BUNDLE_ID"
 ZIP_URL="https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/ShelfDrop-macos.zip"
 TMP_DIR="$(mktemp -d)"
 ZIP_PATH="$TMP_DIR/$APP_NAME-macos.zip"
