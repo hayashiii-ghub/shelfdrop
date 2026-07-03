@@ -69,7 +69,7 @@ Apple IDやMac App Storeを使わず、GitHub Releasesから直接ダウンロ�
 ### ターミナルからインストール/更新
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/hayashiii-ghub/shelfdrop/main/script/install_latest.sh | bash
+curl -fsSL https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/install_latest.sh | bash
 ```
 
 既存の`/Applications/ShelfDrop.app`または`~/Applications/ShelfDrop.app`を検出して最新版に入れ替えます。まだ入っていない場合は、書き込み可能なら`/Applications`、そうでなければ`~/Applications`にインストールします。
@@ -82,7 +82,7 @@ curl -fsSL https://raw.githubusercontent.com/hayashiii-ghub/shelfdrop/main/scrip
 ターミナルから最新版へ入れ替える場合は、インストールと同じコマンドを使います。
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/hayashiii-ghub/shelfdrop/main/script/install_latest.sh | bash
+curl -fsSL https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/install_latest.sh | bash
 ```
 
 `/Applications`または`~/Applications`にある既存の`ShelfDrop.app`を検出して更新します。メニューバーの`Download Latest Version...`から最新版のダウンロードを開始することもできます。
