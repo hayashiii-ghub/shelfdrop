@@ -15,6 +15,7 @@ STAGING_DIR="$(mktemp -d "${TMPDIR:-/tmp}/ShelfDrop-package.XXXXXX")"
 PACKAGE_DIR="$STAGING_DIR/package"
 DMG_STAGING_DIR="$STAGING_DIR/dmg"
 DMG_MOUNT_DIR="$STAGING_DIR/dmg-mount"
+DMG_RW_PATH="$STAGING_DIR/$APP_NAME-rw.dmg"
 APP_BUNDLE="$PACKAGE_DIR/$APP_NAME.app"
 APP_CONTENTS="$APP_BUNDLE/Contents"
 APP_MACOS="$APP_CONTENTS/MacOS"
@@ -130,12 +131,44 @@ ln -s /Applications "$DMG_STAGING_DIR/Applications"
 hdiutil create \
   -volname "$APP_NAME" \
   -srcfolder "$DMG_STAGING_DIR" \
-  -format UDZO \
+  -fs HFS+ \
+  -format UDRW \
   -ov \
-  "$DMG_PATH"
-hdiutil verify "$DMG_PATH"
+  "$DMG_RW_PATH"
 
 mkdir -p "$DMG_MOUNT_DIR"
+hdiutil attach -readwrite -noverify -noautoopen -mountpoint "$DMG_MOUNT_DIR" "$DMG_RW_PATH" >/dev/null
+
+osascript <<APPLESCRIPT
+tell application "Finder"
+  tell disk "$APP_NAME"
+    open
+    set current view of container window to icon view
+    set toolbar visible of container window to false
+    set statusbar visible of container window to false
+    set bounds of container window to {120, 120, 700, 440}
+    set viewOptions to icon view options of container window
+    set arrangement of viewOptions to not arranged
+    set icon size of viewOptions to 96
+    set text size of viewOptions to 16
+    set position of item "$APP_NAME.app" to {180, 150}
+    set position of item "Applications" to {420, 150}
+    close
+    open
+    update without registering applications
+  end tell
+end tell
+APPLESCRIPT
+
+sync
+hdiutil detach "$DMG_MOUNT_DIR" >/dev/null
+
+hdiutil convert "$DMG_RW_PATH" \
+  -format UDZO \
+  -imagekey zlib-level=9 \
+  -o "$DMG_PATH"
+hdiutil verify "$DMG_PATH"
+
 hdiutil attach -nobrowse -readonly -mountpoint "$DMG_MOUNT_DIR" "$DMG_PATH" >/dev/null
 test -d "$DMG_MOUNT_DIR/$APP_NAME.app"
 test -L "$DMG_MOUNT_DIR/Applications"
