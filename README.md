@@ -62,16 +62,10 @@ Apple IDやMac App Storeを使わず、GitHub Releasesから直接ダウンロ�
 
 1. [最新の`ShelfDrop-macos.dmg`をダウンロード](https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/ShelfDrop-macos.dmg)します。
 2. DMGを開き、`ShelfDrop.app`を`Applications`へドラッグします。
-3. 初回のみ、Finderで`ShelfDrop.app`をControlキーを押しながらクリックし、`開く`を選びます。
+3. `Applications`フォルダから`ShelfDrop.app`を開きます。
 
 > [!NOTE]
-> 配布版はad hoc署名で、Apple Developer IDによる署名とnotarizationは行っていません。そのため、初回起動時にmacOSの警告が表示される場合があります。
-
-「壊れているため開けません」と表示される場合:
-
-```sh
-xattr -dr com.apple.quarantine /Applications/ShelfDrop.app
-```
+> Apple Developer Program未登録のため、現在の配布版はad hoc署名です。初回起動時にmacOSの警告が表示される場合があります。
 
 ## 更新
 
@@ -112,6 +106,8 @@ make check
 ```sh
 make package VERSION=v0.2.4
 ```
+
+Release workflowでnotarized buildを作成するには、GitHub Secretsに`APPLE_DEVELOPER_ID_CERTIFICATE_BASE64`、`APPLE_DEVELOPER_ID_CERTIFICATE_PASSWORD`、`APPLE_NOTARY_KEY_BASE64`、`APPLE_NOTARY_KEY_ID`、`APPLE_NOTARY_ISSUER_ID`を設定します。
 
 主なディレクトリ:
 

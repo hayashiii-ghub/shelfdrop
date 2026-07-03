@@ -211,16 +211,12 @@
         <ol class="install-steps reveal">
           <li><a href="https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/ShelfDrop-macos.dmg">Download the latest <code>ShelfDrop-macos.dmg</code></a>.</li>
           <li>Open the DMG and drag <code>ShelfDrop.app</code> to Applications.</li>
-          <li>On first launch, Control-click the app and choose Open.</li>
+          <li>Open <code>ShelfDrop.app</code> from Applications.</li>
         </ol>
 
         <aside class="note glass reveal">
-          <p class="note-title"><i class="ph ph-info" aria-hidden="true"></i> First-launch warning</p>
-          <p>Builds are ad-hoc signed, not notarized, so macOS may warn the first time. If you see "ShelfDrop is damaged," clear the quarantine flag:</p>
-          <div class="code-block">
-            <pre class="code" tabindex="0"><code>xattr -dr com.apple.quarantine /Applications/ShelfDrop.app</code></pre>
-            <button class="copy-btn" type="button" aria-label="Copy command"><i class="ph ph-copy" aria-hidden="true"></i></button>
-          </div>
+          <p class="note-title"><i class="ph ph-info" aria-hidden="true"></i> First launch</p>
+          <p>Current release builds are ad-hoc signed because ShelfDrop is not yet distributed through an Apple Developer account. macOS may warn on first launch.</p>
           <p class="note-foot">Already installed? Update from the terminal:</p>
           <div class="code-block">
             <pre class="code" tabindex="0"><code>curl -fsSL https://raw.githubusercontent.com/hayashiii-ghub/shelfdrop/main/script/install_latest.sh | bash</code></pre>

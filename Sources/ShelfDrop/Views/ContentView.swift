@@ -2,28 +2,37 @@ import SwiftUI
 
 struct ContentView: View {
     @ObservedObject var store: ShelfStore
+    let onCollapseChange: (Bool) -> Void
     let onDismiss: () -> Void
     @State private var isDropTargeted = false
+    @State private var isCollapsed = false
 
     var body: some View {
         VStack(spacing: 0) {
-            ShelfHeader(count: store.items.count, onDismiss: onDismiss)
+            ShelfHeader(
+                count: store.items.count,
+                isCollapsed: isCollapsed,
+                onToggleCollapsed: toggleCollapsed,
+                onDismiss: onDismiss
+            )
 
-            Divider()
+            if !isCollapsed {
+                Divider()
 
-            ZStack {
-                if store.items.isEmpty {
-                    EmptyShelfView()
-                } else {
-                    itemList
+                ZStack {
+                    if store.items.isEmpty {
+                        EmptyShelfView()
+                    } else {
+                        itemList
+                    }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(isDropTargeted ? Color.accentColor.opacity(0.12) : Color.clear)
+
+                Divider()
+
+                ActionBar(store: store)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(isDropTargeted ? Color.accentColor.opacity(0.12) : Color.clear)
-
-            Divider()
-
-            ActionBar(store: store)
         }
         .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -34,8 +43,10 @@ struct ContentView: View {
                     lineWidth: 1
                 )
         }
+        .animation(.easeInOut(duration: 0.16), value: isCollapsed)
         .onDrop(of: ShelfStore.acceptedTypeIdentifiers, isTargeted: $isDropTargeted) { providers in
-            store.handleDrop(providers: providers)
+            guard !isCollapsed else { return false }
+            return store.handleDrop(providers: providers)
         }
     }
 
@@ -58,14 +69,24 @@ struct ContentView: View {
             .padding(10)
         }
     }
+
+    private func toggleCollapsed() {
+        isCollapsed.toggle()
+        if isCollapsed {
+            isDropTargeted = false
+        }
+        onCollapseChange(isCollapsed)
+    }
 }
 
 private struct ShelfHeader: View {
     let count: Int
+    let isCollapsed: Bool
+    let onToggleCollapsed: () -> Void
     let onDismiss: () -> Void
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 8) {
             ZStack(alignment: .leading) {
                 HStack(spacing: 10) {
                     Image(nsImage: ShelfIcon.templateImage())
@@ -79,12 +100,28 @@ private struct ShelfHeader: View {
                 .allowsHitTesting(false)
 
                 WindowDragHandle()
-                    .frame(width: 128, height: 30)
+                    .frame(width: 108, height: 30)
             }
-            .frame(width: 128, height: 30, alignment: .leading)
+            .frame(width: 108, height: 30, alignment: .leading)
             .help("Drag to move")
 
             Spacer()
+
+            Button(action: onDismiss) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 12, weight: .semibold))
+            }
+            .buttonStyle(.borderless)
+            .frame(width: 20, height: 22)
+            .help("Hide Shelf")
+
+            Button(action: onToggleCollapsed) {
+                Image(systemName: isCollapsed ? "chevron.down" : "chevron.up")
+                    .font(.system(size: 12, weight: .semibold))
+            }
+            .buttonStyle(.borderless)
+            .frame(width: 20, height: 22)
+            .help(isCollapsed ? "Expand Shelf" : "Collapse Shelf")
 
             Text("\(count)")
                 .font(.caption.monospacedDigit())
@@ -92,15 +129,8 @@ private struct ShelfHeader: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
                 .background(.thinMaterial, in: Capsule())
-
-            Button(action: onDismiss) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 12, weight: .semibold))
-            }
-            .buttonStyle(.borderless)
-            .help("Hide Shelf")
         }
-        .padding(.horizontal, 14)
+        .padding(.horizontal, 12)
         .padding(.vertical, 11)
     }
 }

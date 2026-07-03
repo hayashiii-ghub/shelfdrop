@@ -15,6 +15,7 @@ final class ShelfWindowController: NSObject, NSWindowDelegate {
         width: shelfWidth,
         height: shelfWidth / approvedIconAspectRatio
     )
+    private static let collapsedShelfSize = NSSize(width: shelfWidth, height: 52)
     private static let shelfOpacity: CGFloat = 0.9
 
     private let store: ShelfStore
@@ -68,11 +69,14 @@ final class ShelfWindowController: NSObject, NSWindowDelegate {
         panel.contentViewController = NSHostingController(
             rootView: ContentView(
                 store: store,
+                onCollapseChange: { [weak self] isCollapsed in
+                    self?.setShelfCollapsed(isCollapsed)
+                },
                 onDismiss: { [weak self] in
                     self?.hideShelf()
                 }
             )
-                .frame(width: size.width, height: size.height)
+                .frame(width: size.width)
         )
         panel.backgroundColor = .clear
         panel.alphaValue = Self.shelfOpacity
@@ -87,6 +91,18 @@ final class ShelfWindowController: NSObject, NSWindowDelegate {
 
         self.panel = panel
         return panel
+    }
+
+    private func setShelfCollapsed(_ isCollapsed: Bool) {
+        guard let panel else { return }
+
+        let targetSize = isCollapsed ? Self.collapsedShelfSize : Self.shelfSize
+        var frame = panel.frame
+        let topEdge = frame.maxY
+        frame.size = targetSize
+        frame.origin.y = topEdge - targetSize.height
+
+        panel.setFrame(frame, display: true, animate: true)
     }
 
     private func positionNearPointer(_ panel: NSPanel) {
