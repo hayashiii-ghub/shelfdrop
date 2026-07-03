@@ -57,3 +57,14 @@ SHELFDROP_INSTALL_DIR="$INSTALL_DIR" \
 test "$(plutil -extract CFBundleShortVersionString raw "$EXISTING_APP/Contents/Info.plist")" = "9.9.9"
 test ! -e "$EXISTING_APP/Contents/existing-marker"
 codesign --verify --deep --strict "$EXISTING_APP"
+
+PIPED_INSTALL_DIR="$TEST_ROOT/PipedApplications"
+mkdir -p "$PIPED_INSTALL_DIR"
+SHELFDROP_INSTALL_DIR="$PIPED_INSTALL_DIR" \
+  SHELFDROP_ZIP_PATH="$TEST_ROOT/valid.zip" \
+  SHELFDROP_SKIP_STOP=1 \
+  SHELFDROP_SKIP_OPEN=1 \
+  bash < "$ROOT_DIR/script/install_latest.sh"
+
+test -x "$PIPED_INSTALL_DIR/ShelfDrop.app/Contents/MacOS/ShelfDrop"
+codesign --verify --deep --strict "$PIPED_INSTALL_DIR/ShelfDrop.app"
