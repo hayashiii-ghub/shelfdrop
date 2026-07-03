@@ -2,21 +2,23 @@ import SwiftUI
 
 struct ContentView: View {
     @ObservedObject var store: ShelfStore
+    @ObservedObject var presentation: ShelfPresentationState
+    let expandedHeight: CGFloat
+    let collapsedHeight: CGFloat
     let onCollapseChange: (Bool) -> Void
     let onDismiss: () -> Void
     @State private var isDropTargeted = false
-    @State private var isCollapsed = false
 
     var body: some View {
         VStack(spacing: 0) {
             ShelfHeader(
                 count: store.items.count,
-                isCollapsed: isCollapsed,
+                isCollapsed: presentation.isCollapsed,
                 onToggleCollapsed: toggleCollapsed,
                 onDismiss: onDismiss
             )
 
-            if !isCollapsed {
+            if !presentation.isCollapsed {
                 Divider()
 
                 ZStack {
@@ -43,9 +45,10 @@ struct ContentView: View {
                     lineWidth: 1
                 )
         }
-        .animation(.easeInOut(duration: 0.16), value: isCollapsed)
+        .frame(height: presentation.isCollapsed ? collapsedHeight : expandedHeight, alignment: .top)
+        .animation(.easeInOut(duration: 0.16), value: presentation.isCollapsed)
         .onDrop(of: ShelfStore.acceptedTypeIdentifiers, isTargeted: $isDropTargeted) { providers in
-            guard !isCollapsed else { return false }
+            guard !presentation.isCollapsed else { return false }
             return store.handleDrop(providers: providers)
         }
     }
@@ -71,11 +74,11 @@ struct ContentView: View {
     }
 
     private func toggleCollapsed() {
-        isCollapsed.toggle()
-        if isCollapsed {
+        presentation.isCollapsed.toggle()
+        if presentation.isCollapsed {
             isDropTargeted = false
         }
-        onCollapseChange(isCollapsed)
+        onCollapseChange(presentation.isCollapsed)
     }
 }
 

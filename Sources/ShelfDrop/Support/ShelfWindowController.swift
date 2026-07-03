@@ -19,6 +19,7 @@ final class ShelfWindowController: NSObject, NSWindowDelegate {
     private static let shelfOpacity: CGFloat = 0.9
 
     private let store: ShelfStore
+    private let presentation = ShelfPresentationState()
     private var panel: NSPanel?
     private var localKeyDownMonitor: Any?
 
@@ -28,6 +29,11 @@ final class ShelfWindowController: NSObject, NSWindowDelegate {
 
     func showShelf() {
         let panel = shelfPanel()
+
+        if presentation.isCollapsed {
+            presentation.isCollapsed = false
+            setShelfCollapsed(false, animate: false)
+        }
 
         if !panel.isVisible {
             positionNearPointer(panel)
@@ -69,6 +75,9 @@ final class ShelfWindowController: NSObject, NSWindowDelegate {
         panel.contentViewController = NSHostingController(
             rootView: ContentView(
                 store: store,
+                presentation: presentation,
+                expandedHeight: size.height,
+                collapsedHeight: Self.collapsedShelfSize.height,
                 onCollapseChange: { [weak self] isCollapsed in
                     self?.setShelfCollapsed(isCollapsed)
                 },
@@ -93,7 +102,7 @@ final class ShelfWindowController: NSObject, NSWindowDelegate {
         return panel
     }
 
-    private func setShelfCollapsed(_ isCollapsed: Bool) {
+    private func setShelfCollapsed(_ isCollapsed: Bool, animate: Bool = true) {
         guard let panel else { return }
 
         let targetSize = isCollapsed ? Self.collapsedShelfSize : Self.shelfSize
@@ -102,7 +111,7 @@ final class ShelfWindowController: NSObject, NSWindowDelegate {
         frame.size = targetSize
         frame.origin.y = topEdge - targetSize.height
 
-        panel.setFrame(frame, display: true, animate: true)
+        panel.setFrame(frame, display: true, animate: animate)
     }
 
     private func positionNearPointer(_ panel: NSPanel) {
