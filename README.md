@@ -60,16 +60,26 @@ Apple IDやMac App Storeを使わず、GitHub Releasesから直接ダウンロ�
 
 ## インストール
 
+### DMGからインストール
+
 1. [最新の`ShelfDrop-macos.dmg`をダウンロード](https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/ShelfDrop-macos.dmg)します。
 2. DMGを開き、`ShelfDrop.app`を`Applications`へドラッグします。
 3. `Applications`フォルダから`ShelfDrop.app`を開きます。
+
+### ターミナルからインストール/更新
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/hayashiii-ghub/shelfdrop/main/script/install_latest.sh | bash
+```
+
+既存の`/Applications/ShelfDrop.app`または`~/Applications/ShelfDrop.app`を検出して最新版に入れ替えます。まだ入っていない場合は、書き込み可能なら`/Applications`、そうでなければ`~/Applications`にインストールします。
 
 > [!NOTE]
 > Apple Developer Program未登録のため、現在の配布版はad hoc署名です。初回起動時にmacOSの警告が表示される場合があります。
 
 ## 更新
 
-ターミナルから最新版へ入れ替えられます。
+ターミナルから最新版へ入れ替える場合は、インストールと同じコマンドを使います。
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/hayashiii-ghub/shelfdrop/main/script/install_latest.sh | bash
