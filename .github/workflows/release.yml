@@ -25,7 +25,7 @@ jobs:
           fi
           xcode-select -p
 
-      - name: Build distributable zip
+      - name: Build distributable packages
         env:
           SHELFDROP_UNIVERSAL: "1"
           SHELFDROP_VERSION: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || '0.0.0' }}
@@ -43,7 +43,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ShelfDrop-macos
-          path: dist/ShelfDrop-macos.zip
+          path: |
+            dist/ShelfDrop-macos.dmg
+            dist/ShelfDrop-macos.zip
 
       - name: Upload GitHub release asset
         if: startsWith(github.ref, 'refs/tags/')
@@ -53,4 +55,4 @@ jobs:
         run: |
           gh release view "$TAG_NAME" >/dev/null 2>&1 || \
             gh release create "$TAG_NAME" --title "$TAG_NAME" --notes "ShelfDrop macOS build."
-          gh release upload "$TAG_NAME" dist/ShelfDrop-macos.zip --clobber
+          gh release upload "$TAG_NAME" dist/ShelfDrop-macos.dmg dist/ShelfDrop-macos.zip --clobber

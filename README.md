@@ -19,7 +19,7 @@
 <p align="center">
   <a href="https://shelfdrop-gamma.vercel.app"><strong>Webサイト</strong></a>
   ・
-  <a href="https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/ShelfDrop-macos.zip"><strong>最新版をダウンロード</strong></a>
+  <a href="https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/ShelfDrop-macos.dmg"><strong>最新版をダウンロード</strong></a>
   ・
   <a href="https://github.com/hayashiii-ghub/shelfdrop/issues">Issue</a>
 </p>
@@ -60,8 +60,8 @@ Apple IDやMac App Storeを使わず、GitHub Releasesから直接ダウンロ�
 
 ## インストール
 
-1. [最新の`ShelfDrop-macos.zip`をダウンロード](https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/ShelfDrop-macos.zip)します。
-2. ZIPを展開し、`ShelfDrop.app`を`アプリケーション`フォルダへ移動します。
+1. [最新の`ShelfDrop-macos.dmg`をダウンロード](https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/ShelfDrop-macos.dmg)します。
+2. DMGを開き、`ShelfDrop.app`を`Applications`へドラッグします。
 3. 初回のみ、Finderで`ShelfDrop.app`をControlキーを押しながらクリックし、`開く`を選びます。
 
 > [!NOTE]
@@ -107,7 +107,7 @@ curl -fsSL https://raw.githubusercontent.com/hayashiii-ghub/shelfdrop/main/scrip
 make check
 ```
 
-配布用ZIPを作成:
+配布用DMGとZIPを作成:
 
 ```sh
 make package VERSION=v0.2.4

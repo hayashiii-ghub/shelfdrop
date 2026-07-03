@@ -13,6 +13,8 @@ DIST_DIR="$ROOT_DIR/dist"
 DIST_PACKAGE_DIR="$DIST_DIR/package"
 STAGING_DIR="$(mktemp -d "${TMPDIR:-/tmp}/ShelfDrop-package.XXXXXX")"
 PACKAGE_DIR="$STAGING_DIR/package"
+DMG_STAGING_DIR="$STAGING_DIR/dmg"
+DMG_MOUNT_DIR="$STAGING_DIR/dmg-mount"
 APP_BUNDLE="$PACKAGE_DIR/$APP_NAME.app"
 APP_CONTENTS="$APP_BUNDLE/Contents"
 APP_MACOS="$APP_CONTENTS/MacOS"
@@ -22,10 +24,15 @@ INFO_PLIST="$APP_CONTENTS/Info.plist"
 APP_ICON="$ROOT_DIR/Assets/ShelfDrop.icns"
 MENU_BAR_ICON="$ROOT_DIR/Assets/MenuBarTemplate.png"
 ZIP_PATH="$DIST_DIR/$APP_NAME-macos.zip"
+DMG_PATH="$DIST_DIR/$APP_NAME-macos.dmg"
 SWIFTPM_CACHE_DIR="$ROOT_DIR/.build/cache"
 VALIDATION_DIR="$STAGING_DIR/validation"
 
-trap 'rm -rf "$STAGING_DIR"' EXIT
+cleanup() {
+  hdiutil detach "$DMG_MOUNT_DIR" >/dev/null 2>&1 || true
+  rm -rf "$STAGING_DIR"
+}
+trap cleanup EXIT
 
 export CLANG_MODULE_CACHE_PATH="${CLANG_MODULE_CACHE_PATH:-$ROOT_DIR/.build/module-cache}"
 
@@ -50,7 +57,7 @@ echo "Building $BUILD_KIND release..."
 swift build "${SWIFT_BUILD_FLAGS[@]}"
 BUILD_BINARY="$(swift build "${SWIFT_BUILD_FLAGS[@]}" --show-bin-path)/$APP_NAME"
 
-rm -rf "$DIST_PACKAGE_DIR" "$ZIP_PATH"
+rm -rf "$DIST_PACKAGE_DIR" "$ZIP_PATH" "$DMG_PATH"
 mkdir -p "$APP_MACOS" "$APP_RESOURCES"
 cp "$BUILD_BINARY" "$APP_BINARY"
 cp "$APP_ICON" "$APP_RESOURCES/ShelfDrop.icns"
@@ -112,4 +119,28 @@ xattr -cr "$DIST_PACKAGE_DIR/$APP_NAME.app" 2>/dev/null || true
 codesign --force --sign - "$DIST_PACKAGE_DIR/$APP_NAME.app"
 codesign --verify --deep --strict "$DIST_PACKAGE_DIR/$APP_NAME.app"
 
+mkdir -p "$DMG_STAGING_DIR"
+COPYFILE_DISABLE=1 ditto --norsrc --noextattr --noqtn --noacl \
+  "$APP_BUNDLE" "$DMG_STAGING_DIR/$APP_NAME.app"
+xattr -cr "$DMG_STAGING_DIR/$APP_NAME.app" 2>/dev/null || true
+codesign --force --sign - "$DMG_STAGING_DIR/$APP_NAME.app"
+codesign --verify --deep --strict "$DMG_STAGING_DIR/$APP_NAME.app"
+ln -s /Applications "$DMG_STAGING_DIR/Applications"
+
+hdiutil create \
+  -volname "$APP_NAME" \
+  -srcfolder "$DMG_STAGING_DIR" \
+  -format UDZO \
+  -ov \
+  "$DMG_PATH"
+hdiutil verify "$DMG_PATH"
+
+mkdir -p "$DMG_MOUNT_DIR"
+hdiutil attach -nobrowse -readonly -mountpoint "$DMG_MOUNT_DIR" "$DMG_PATH" >/dev/null
+test -d "$DMG_MOUNT_DIR/$APP_NAME.app"
+test -L "$DMG_MOUNT_DIR/Applications"
+codesign --verify --deep --strict "$DMG_MOUNT_DIR/$APP_NAME.app"
+hdiutil detach "$DMG_MOUNT_DIR" >/dev/null
+
 echo "$ZIP_PATH"
+echo "$DMG_PATH"
