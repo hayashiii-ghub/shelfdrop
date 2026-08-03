@@ -1,3 +1,5 @@
+import { CopyCommandButton } from "./CopyCommandButton";
+
 const downloadUrl =
   "https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/ShelfDrop-macos.dmg";
 const updateCommand =
@@ -151,7 +153,7 @@ export default function Home() {
             <span className="method">ターミナル</span>
             <h3>コマンドで導入・更新</h3>
             <p>次のコマンドは、未導入ならインストール、導入済みなら最新版への更新を行います。</p>
-            <div className="codeBlock"><code>{updateCommand}</code></div>
+            <div className="codeBlock commandRow"><code>{updateCommand}</code><CopyCommandButton command={updateCommand} /></div>
             <p className="microcopy">既存のアプリを検出し、安全に入れ替えてから自動で起動します。</p>
           </article>
         </div>
@@ -168,7 +170,7 @@ export default function Home() {
             <h2>更新も、いつもの一行で。</h2>
             <p>インストール時と同じコマンドをもう一度実行するか、メニューバーの「Download Latest Version...」から最新版を取得できます。</p>
           </div>
-          <div className="updateCode"><span>Terminal</span><code>{updateCommand}</code></div>
+          <div className="updateCode"><span>Terminal</span><div className="commandRow"><code>{updateCommand}</code><CopyCommandButton command={updateCommand} /></div></div>
         </div>
       </section>
 
