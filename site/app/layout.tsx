@@ -19,7 +19,6 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://shelfdrop.haygsiiii.chatgpt.site"),
   title: "ShelfDrop — 作業中のもの、いったんここへ。",
   description: "ファイル、フォルダ、リンク、テキストを一時的に置いておける、macOS用フローティングシェルフ。",
-  icons: { icon: "/shelfdrop-icon.png", shortcut: "/shelfdrop-icon.png", apple: "/shelfdrop-icon.png" },
   openGraph: {
     title: "ShelfDrop — 作業中のもの、いったんここへ。",
     description: "Finderの選択項目も、リンクも、テキストも。必要になる瞬間まで手元に置けるmacOS用フローティングシェルフ。",

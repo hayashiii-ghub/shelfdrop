@@ -20,7 +20,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 .nav { height: 82px; display: flex; align-items: center; gap: 40px; position: relative; z-index: 10; }
 .brand { display: flex; align-items: center; gap: 11px; font-size: 18px; font-weight: 600; letter-spacing: -.025em; }
-.brand img { border-radius: 9px; }
 .navLinks { display: flex; gap: 28px; margin-left: auto; color: var(--muted); font-size: 14px; }
 .navLinks a { transition: color .2s ease; }
 .navLinks a:hover { color: var(--ink); }
@@ -48,7 +47,6 @@ h1 span { display: block; white-space: nowrap; }
 .shelfMock::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(120deg, rgba(255,255,255,.13), transparent 28%, transparent 70%, rgba(255,255,255,.05)); pointer-events: none; }
 .mockHeader { display: flex; justify-content: space-between; align-items: center; }
 .mockBrand { display: flex; align-items: center; gap: 14px; font-size: 21px; }
-.mockBrand img { border-radius: 9px; }
 .mockControls { display: flex; gap: 12px; align-items: center; color: #a8aaad; }
 .controlGlyph { width: 28px; height: 36px; display: grid; place-items: center; font-family: var(--font-ibm-plex-sans-jp), sans-serif; font-weight: 400; line-height: 1; }
 .closeGlyph { font-size: 30px; }
