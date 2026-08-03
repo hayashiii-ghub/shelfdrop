@@ -17,8 +17,6 @@
 </p>
 
 <p align="center">
-  <a href="https://shelfdrop-gamma.vercel.app"><strong>Webサイト</strong></a>
-  ・
   <a href="https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/ShelfDrop-macos.dmg"><strong>最新版をダウンロード</strong></a>
   ・
   <a href="https://github.com/hayashiii-ghub/shelfdrop/issues">Issue</a>
