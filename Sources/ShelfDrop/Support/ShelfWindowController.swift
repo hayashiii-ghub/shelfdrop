@@ -27,8 +27,12 @@ final class ShelfWindowController: NSObject, NSWindowDelegate {
 
         if presentation.isCollapsed {
             presentation.isCollapsed = false
-            setShelfCollapsed(false, animate: false)
         }
+        // NSHostingController can replace the panel's initial height with its
+        // compact fitting size when the content view is first installed.
+        // Reassert the expanded frame before every presentation so a fresh or
+        // updated app never opens as a short, partially laid-out shelf.
+        setShelfCollapsed(false, animate: false)
 
         if !panel.isVisible {
             positionNearPointer(panel)
