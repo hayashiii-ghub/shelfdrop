@@ -11,7 +11,7 @@
 <p align="center">
   <a href="https://github.com/hayashiii-ghub/shelfdrop/releases/latest"><img src="https://img.shields.io/github/v/release/hayashiii-ghub/shelfdrop?display_name=tag&sort=semver" alt="Latest release"></a>
   <a href="https://github.com/hayashiii-ghub/shelfdrop/actions/workflows/ci.yml"><img src="https://github.com/hayashiii-ghub/shelfdrop/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
-  <img src="https://img.shields.io/badge/macOS-14%2B-black" alt="macOS 14 or later">
+  <img src="https://img.shields.io/badge/macOS-26%2B-black" alt="macOS 26 or later">
   <img src="https://img.shields.io/badge/Swift-5.9%2B-F05138" alt="Swift 5.9 or later">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License"></a>
 </p>
@@ -95,7 +95,7 @@ curl -fsSL https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/
 
 必要な環境:
 
-- macOS 14以降
+- macOS 26以降
 - Xcode Command Line Tools
 - Swift 5.9以降
 

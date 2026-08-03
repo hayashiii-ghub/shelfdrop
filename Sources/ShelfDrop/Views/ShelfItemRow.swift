@@ -10,19 +10,20 @@ struct ShelfItemRow: View {
     var body: some View {
         HStack(spacing: 10) {
             Image(systemName: item.kind.systemImage)
-                .font(.system(size: 17, weight: .semibold))
-                .foregroundStyle(iconColor)
-                .frame(width: 28, height: 28)
-                .background(iconColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+                .font(.system(size: 15, weight: .regular))
+                .symbolRenderingMode(.monochrome)
+                .foregroundStyle(.secondary)
+                .frame(width: 24, height: 24)
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(item.displayTitle)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 13, weight: .regular, design: .default))
+                    .tracking(-0.05)
                     .lineLimit(1)
                     .truncationMode(.middle)
 
                 Text(item.detail)
-                    .font(.caption)
+                    .font(.system(size: 11, weight: .regular, design: .default))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .truncationMode(.middle)
@@ -55,9 +56,11 @@ struct ShelfItemRow: View {
             .help("Remove")
         }
         .contentShape(Rectangle())
-        .padding(.horizontal, 8)
-        .padding(.vertical, 7)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 9, style: .continuous))
+        .font(.system(size: 12, weight: .regular))
+        .symbolRenderingMode(.monochrome)
+        .padding(.horizontal, 9)
+        .padding(.vertical, 8)
+        .background(.primary.opacity(0.045), in: RoundedRectangle(cornerRadius: 13, style: .continuous))
         .contextMenu {
             Button("Open", action: onOpen)
             Button("Copy", action: onCopy)
@@ -69,18 +72,4 @@ struct ShelfItemRow: View {
         }
     }
 
-    private var iconColor: Color {
-        switch item.kind {
-        case .file:
-            .blue
-        case .folder:
-            .orange
-        case .link:
-            .purple
-        case .text:
-            .green
-        case .image:
-            .pink
-        }
-    }
 }

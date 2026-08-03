@@ -63,7 +63,7 @@ private final class MultiFileDragSourceView: NSImageView, NSDraggingSource {
             accessibilityDescription: "Drag All Files"
         )
         image = symbol?.withSymbolConfiguration(
-            NSImage.SymbolConfiguration(pointSize: 14, weight: .medium)
+            NSImage.SymbolConfiguration(pointSize: 13, weight: .regular)
         )
         imageScaling = .scaleProportionallyDown
         contentTintColor = .secondaryLabelColor

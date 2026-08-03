@@ -2,7 +2,7 @@
 
 SHELFDROP_APP_NAME="ShelfDrop"
 SHELFDROP_BUNDLE_ID="work.hayashigoto.ShelfDrop"
-SHELFDROP_MIN_SYSTEM_VERSION="14.0"
+SHELFDROP_MIN_SYSTEM_VERSION="26.0"
 
 shelfdrop_copy_bundle_resources() {
   local root_dir="$1"

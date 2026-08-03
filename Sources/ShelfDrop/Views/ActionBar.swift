@@ -4,20 +4,16 @@ struct ActionBar: View {
     @ObservedObject var store: ShelfStore
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 6) {
             MultiFileDragSource(
                 fileURLs: store.isExporting ? [] : store.items.batchDragFileURLs
             )
-            .frame(width: 24, height: 24)
+            .frame(width: 28, height: 28)
             .disabled(store.items.isEmpty || store.isExporting)
 
-            Button {
+            actionButton("clipboard", help: "Add Clipboard Text") {
                 store.addClipboardText(NSPasteboard.general.string(forType: .string))
-            } label: {
-                Label("Add Clipboard Text", systemImage: "doc.on.clipboard")
             }
-            .frame(width: 24, height: 24)
-            .help("Add Clipboard Text")
             .disabled(store.isExporting)
 
             Button {
@@ -27,46 +23,54 @@ struct ActionBar: View {
                     ProgressView()
                         .controlSize(.small)
                 } else {
-                    Label("Copy All", systemImage: "doc.on.doc")
+                    Image(systemName: "square.on.square")
                 }
             }
-            .frame(width: 24, height: 24)
-            .help("Copy All to Folder")
+            .iconActionButton(help: "Copy All to Folder")
             .disabled(store.items.isEmpty || store.isExporting)
 
-            Button {
+            actionButton("folder.badge.plus", help: "Move All to Folder") {
                 store.moveItemsToChosenFolder()
-            } label: {
-                Label("Move All to Folder", systemImage: "folder.badge.plus")
             }
-            .frame(width: 24, height: 24)
-            .help("Move All to Folder")
             .disabled(store.items.isEmpty || store.isExporting)
 
-            Button {
+            actionButton("archivebox", help: "Create ZIP Archive") {
                 store.createZipArchive()
-            } label: {
-                Label("Create ZIP", systemImage: "doc.zipper")
             }
-            .frame(width: 24, height: 24)
-            .help("Create ZIP Archive")
             .disabled(store.items.isEmpty || store.isExporting)
-
-            Spacer()
 
             Button(role: .destructive) {
                 store.clear()
             } label: {
                 Image(systemName: "trash")
             }
-            .frame(width: 24, height: 24)
-            .help("Clear Shelf")
+            .iconActionButton(help: "Clear Shelf")
             .disabled(store.items.isEmpty || store.isExporting)
         }
-        .font(.system(size: 14, weight: .medium))
-        .buttonStyle(.borderless)
-        .labelStyle(.iconOnly)
+        .font(.system(size: 13, weight: .regular))
+        .symbolRenderingMode(.monochrome)
         .padding(.horizontal, 12)
-        .padding(.vertical, 10)
+        .padding(.bottom, 12)
+    }
+
+    private func actionButton(
+        _ systemImage: String,
+        help: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+        }
+        .iconActionButton(help: help)
+    }
+}
+
+private extension View {
+    func iconActionButton(help: String) -> some View {
+        self
+            .buttonStyle(.plain)
+            .frame(width: 28, height: 28)
+            .contentShape(Rectangle())
+            .help(help)
     }
 }

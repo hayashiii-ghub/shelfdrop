@@ -8,15 +8,9 @@ private let windowLogger = Logger(
 )
 
 final class ShelfWindowController: NSObject, NSWindowDelegate {
-    // Matches the approved menu bar glyph's measured 742 x 847 bounds.
-    private static let approvedIconAspectRatio: CGFloat = 742 / 847
-    private static let shelfWidth: CGFloat = 240
-    private static let shelfSize = NSSize(
-        width: shelfWidth,
-        height: shelfWidth / approvedIconAspectRatio
-    )
-    private static let collapsedShelfSize = NSSize(width: shelfWidth, height: 52)
-    private static let shelfOpacity: CGFloat = 0.9
+    private static let shelfLength: CGFloat = 256
+    private static let shelfSize = NSSize(width: shelfLength, height: shelfLength)
+    private static let collapsedShelfSize = NSSize(width: shelfLength, height: 50)
 
     private let store: ShelfStore
     private let presentation = ShelfPresentationState()
@@ -88,8 +82,10 @@ final class ShelfWindowController: NSObject, NSWindowDelegate {
                 .frame(width: size.width)
         )
         panel.backgroundColor = .clear
-        panel.alphaValue = Self.shelfOpacity
+        panel.alphaValue = 1
         panel.isOpaque = false
+        // NSPanel shadows follow the rectangular window bounds and leave square
+        // corner artifacts around the rounded Liquid Glass surface.
         panel.hasShadow = false
         panel.hidesOnDeactivate = false
         panel.isMovableByWindowBackground = false
