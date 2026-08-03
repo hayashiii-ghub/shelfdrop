@@ -51,7 +51,7 @@ export default function Home() {
       <section className="hero shell" id="top">
         <div className="heroCopy">
           <p className="eyebrow">A floating shelf for macOS</p>
-          <h1>作業中のもの、<br />いったんここへ。</h1>
+          <h1><span>作業中のもの、</span><span>いったんここへ。</span></h1>
           <p className="lead">
             ファイル、フォルダ、リンク、テキストを一時的に置いておける、
             小さなmacOS用フローティングシェルフ。
