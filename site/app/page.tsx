@@ -37,7 +37,6 @@ export default function Home() {
     <main>
       <nav className="nav shell" aria-label="メインナビゲーション">
         <a className="brand" href="#top" aria-label="ShelfDrop トップへ">
-          <img src="/shelfdrop-icon.png" alt="" width="32" height="32" />
           <span>ShelfDrop</span>
         </a>
         <div className="navLinks">
@@ -69,7 +68,6 @@ export default function Home() {
           <div className="shelfMock glass">
             <div className="mockHeader">
               <div className="mockBrand">
-                <img src="/shelfdrop-icon.png" alt="" width="30" height="30" />
                 <strong>ShelfDrop</strong>
               </div>
               <div className="mockControls" aria-hidden="true">
@@ -175,7 +173,7 @@ export default function Home() {
       </section>
 
       <footer className="footer shell">
-        <div className="brand"><img src="/shelfdrop-icon.png" alt="" width="30" height="30" /><span>ShelfDrop</span></div>
+        <div className="brand"><span>ShelfDrop</span></div>
         <p>置き場所を決める前の、小さな置き場所。</p>
         <div><a href="https://github.com/hayashiii-ghub/shelfdrop">GitHub</a><a href="https://github.com/hayashiii-ghub/shelfdrop/issues">Issue</a><a href={downloadUrl}>Download</a></div>
       </footer>
