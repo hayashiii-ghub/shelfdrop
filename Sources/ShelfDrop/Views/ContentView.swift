@@ -3,12 +3,10 @@ import SwiftUI
 struct ContentView: View {
     @ObservedObject var store: ShelfStore
     @ObservedObject var presentation: ShelfPresentationState
-    let expandedHeight: CGFloat
-    let collapsedHeight: CGFloat
     let onCollapseChange: (Bool) -> Void
     let onDismiss: () -> Void
     @State private var isDropTargeted = false
-    private let panelShape = RoundedRectangle(cornerRadius: 36, style: .continuous)
+    private let panelShape = RoundedRectangle(cornerRadius: 32, style: .continuous)
 
     var body: some View {
         VStack(spacing: 0) {
@@ -33,6 +31,7 @@ struct ContentView: View {
                 ActionBar(store: store)
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .glassEffect(.clear, in: panelShape)
         .overlay {
             panelShape
@@ -41,8 +40,6 @@ struct ContentView: View {
                     lineWidth: 1.5
                 )
         }
-        .frame(height: presentation.isCollapsed ? collapsedHeight : expandedHeight, alignment: .top)
-        .animation(.smooth(duration: 0.24), value: presentation.isCollapsed)
         .onDrop(of: ShelfStore.acceptedTypeIdentifiers, isTargeted: $isDropTargeted) { providers in
             guard !presentation.isCollapsed else { return false }
             return store.handleDrop(providers: providers)
@@ -86,55 +83,55 @@ private struct ShelfHeader: View {
     let onDismiss: () -> Void
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 8) {
             ZStack(alignment: .leading) {
-                HStack(spacing: 10) {
+                HStack(spacing: 8) {
                     Image(nsImage: ShelfIcon.templateImage())
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 18, height: 18)
+                        .frame(width: 16, height: 16)
                         .foregroundStyle(.primary)
 
                     Text("ShelfDrop")
-                        .font(.system(size: 15, weight: .medium, design: .default))
+                        .font(.system(size: 14, weight: .medium, design: .default))
                         .tracking(-0.2)
                 }
                 .allowsHitTesting(false)
 
                 WindowDragHandle()
-                    .frame(width: 108, height: 30)
+                    .frame(width: 97, height: 27)
             }
-            .frame(width: 108, height: 30, alignment: .leading)
+            .frame(width: 97, height: 27, alignment: .leading)
             .help("Drag to move")
 
             Spacer()
 
             Button(action: onDismiss) {
                 Image(systemName: "xmark")
-                    .font(.system(size: 12, weight: .regular))
+                    .font(.system(size: 11, weight: .regular))
             }
             .buttonStyle(.borderless)
-            .frame(width: 20, height: 22)
+            .frame(width: 18, height: 20)
             .help("Hide Shelf")
 
             Button(action: onToggleCollapsed) {
                 Image(systemName: isCollapsed ? "chevron.down" : "chevron.up")
-                    .font(.system(size: 12, weight: .regular))
+                    .font(.system(size: 11, weight: .regular))
             }
             .buttonStyle(.borderless)
-            .frame(width: 20, height: 22)
+            .frame(width: 18, height: 20)
             .help(isCollapsed ? "Expand Shelf" : "Collapse Shelf")
 
             Text("\(count)")
-                .font(.system(size: 11, weight: .regular, design: .monospaced))
+                .font(.system(size: 10, weight: .regular, design: .monospaced))
                 .foregroundStyle(.secondary)
-                .padding(.horizontal, 8)
+                .padding(.horizontal, 7)
                 .padding(.vertical, 4)
                 .glassEffect(.clear, in: Capsule())
         }
-        .padding(.horizontal, 14)
-        .padding(.top, isCollapsed ? 10 : 12)
-        .padding(.bottom, isCollapsed ? 10 : 8)
+        .padding(.horizontal, 12)
+        .padding(.top, 10)
+        .padding(.bottom, 8)
     }
 }
 
