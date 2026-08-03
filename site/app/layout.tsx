@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Zen_Kaku_Gothic_New } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+const zenKaku = Zen_Kaku_Gothic_New({
+  variable: "--font-zen-kaku",
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://shelfdrop.haygsiiii.chatgpt.site"),
@@ -26,5 +32,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="ja"><body className={`${geistSans.variable} ${geistMono.variable}`}>{children}</body></html>;
+  return <html lang="ja"><body className={`${geistSans.variable} ${geistMono.variable} ${zenKaku.variable}`}>{children}</body></html>;
 }
