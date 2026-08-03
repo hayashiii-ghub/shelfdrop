@@ -12,14 +12,14 @@
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { margin: 0; overflow-x: clip; background: var(--bg); color: var(--ink); font-family: var(--font-zen-kaku), "Hiragino Sans", sans-serif; font-feature-settings: "palt" 1; -webkit-font-smoothing: antialiased; }
+body { margin: 0; overflow-x: clip; background: var(--bg); color: var(--ink); font-family: var(--font-ibm-plex-sans-jp), "Hiragino Sans", sans-serif; font-feature-settings: "palt" 1; -webkit-font-smoothing: antialiased; }
 a { color: inherit; text-decoration: none; }
 button, a { -webkit-tap-highlight-color: transparent; }
 .shell { width: min(1180px, calc(100% - 48px)); margin-inline: auto; }
 .glass { position: relative; border: 1px solid var(--line); background: linear-gradient(145deg, rgba(255,255,255,.105), rgba(255,255,255,.035)); box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 30px 80px rgba(0,0,0,.28); backdrop-filter: blur(30px) saturate(130%); -webkit-backdrop-filter: blur(30px) saturate(130%); }
 
 .nav { height: 82px; display: flex; align-items: center; gap: 40px; position: relative; z-index: 10; }
-.brand { display: flex; align-items: center; gap: 11px; font-family: var(--font-geist-sans), sans-serif; font-size: 18px; font-weight: 650; letter-spacing: -.035em; }
+.brand { display: flex; align-items: center; gap: 11px; font-size: 18px; font-weight: 600; letter-spacing: -.025em; }
 .brand img { border-radius: 9px; }
 .navLinks { display: flex; gap: 28px; margin-left: auto; color: var(--muted); font-size: 14px; }
 .navLinks a { transition: color .2s ease; }
@@ -49,7 +49,8 @@ h1 span { display: block; white-space: nowrap; }
 .mockHeader { display: flex; justify-content: space-between; align-items: center; }
 .mockBrand { display: flex; align-items: center; gap: 14px; font-size: 21px; }
 .mockBrand img { border-radius: 9px; }
-.mockControls { display: flex; gap: 20px; align-items: center; color: #aaa; font-size: 26px; }
+.mockControls { display: flex; gap: 12px; align-items: center; }
+.mockControls > img { width: 72px; height: 33px; border-radius: 2px; object-fit: cover; opacity: .88; }
 .mockControls .count { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; font-size: 14px; background: rgba(255,255,255,.08); }
 .mockItems { margin-top: 44px; display: grid; gap: 11px; }
 .mockItems > div { min-height: 83px; padding: 0 18px; display: grid; grid-template-columns: 42px 1fr auto; align-items: center; gap: 14px; border-radius: 18px; border: 1px solid rgba(255,255,255,.08); background: rgba(0,0,0,.16); }
@@ -60,7 +61,7 @@ h1 span { display: block; white-space: nowrap; }
 .fileIcon { font-size: 27px; color: #d7d7d4; }
 .mockFooter { margin-top: 26px; display: flex; justify-content: space-around; color: #a2a2a0; font-size: 22px; }
 .shortcutChip { position: absolute; bottom: 20px; right: 0; display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-radius: 18px; z-index: 3; }
-.shortcutChip kbd, .keys kbd { font: 600 13px var(--font-geist-sans); background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.14); border-bottom-color: rgba(0,0,0,.3); border-radius: 7px; padding: 7px 10px; }
+.shortcutChip kbd, .keys kbd { font: 600 13px var(--font-ibm-plex-sans-jp); background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.14); border-bottom-color: rgba(0,0,0,.3); border-radius: 7px; padding: 7px 10px; }
 .shortcutChip p { margin: 0 0 0 6px; color: var(--muted); font-size: 12px; }
 
 .statement { border-block: 1px solid rgba(255,255,255,.08); background: #0e0f10; }
@@ -74,7 +75,7 @@ h1 span { display: block; white-space: nowrap; }
 .useGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 68px; }
 .useCard { min-height: 255px; border-radius: 28px; padding: 26px 28px; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; transition: border-color .25s ease, transform .25s ease; }
 .useCard:hover { border-color: rgba(232,255,146,.28); transform: translateY(-3px); }
-.cardIndex { color: var(--accent); font: 600 11px var(--font-geist-mono); }
+.cardIndex { color: var(--accent); font: 600 11px var(--font-ibm-plex-mono); }
 .useCard h3 { margin: 0; font-size: 23px; letter-spacing: -.035em; font-weight: 560; }
 .useCard p { margin: 14px 0 0; color: var(--muted); font-size: 14px; line-height: 1.75; max-width: 490px; }
 
@@ -83,7 +84,7 @@ h1 span { display: block; white-space: nowrap; }
 .stickyIntro { align-self: start; position: sticky; top: 90px; }
 .steps { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
 .steps li { min-height: 210px; padding: 34px 0; display: grid; grid-template-columns: 54px 1fr; align-content: start; column-gap: 20px; border-bottom: 1px solid var(--line); }
-.stepNumber { color: var(--accent); font: 600 11px var(--font-geist-mono); padding-top: 8px; }
+.stepNumber { color: var(--accent); font: 600 11px var(--font-ibm-plex-mono); padding-top: 8px; }
 .steps h3 { margin: 0; font-size: 31px; font-weight: 560; letter-spacing: -.04em; }
 .steps p { margin: 12px 0 0; color: var(--muted); font-size: 14px; line-height: 1.75; }
 .keys { grid-column: 2; display: flex; align-items: center; gap: 8px; margin-top: 26px; color: var(--faint); }
@@ -101,7 +102,7 @@ h1 span { display: block; white-space: nowrap; }
 .installCard li span { width: 27px; height: 27px; display: grid; place-items: center; flex: 0 0 auto; border: 1px solid var(--line); border-radius: 50%; color: var(--accent); font-size: 10px; }
 .button.full { width: 100%; margin-top: auto; }
 .codeBlock { min-width: 0; max-width: 100%; margin-top: 30px; padding: 19px; border-radius: 15px; border: 1px solid rgba(255,255,255,.09); background: rgba(0,0,0,.25); overflow-x: auto; }
-.codeBlock code, .updateCode code { color: #d9e6ac; font: 12px/1.65 var(--font-geist-mono); white-space: nowrap; }
+.codeBlock code, .updateCode code { color: #d9e6ac; font: 12px/1.65 var(--font-ibm-plex-mono); white-space: nowrap; }
 .installCard .microcopy { margin-top: auto; font-size: 12px; color: var(--faint); }
 .permissionNote { max-width: 900px; margin: 38px auto 0; display: flex; gap: 18px; align-items: center; padding: 22px 26px; border: 1px solid rgba(255,255,255,.08); border-radius: 20px; background: rgba(255,255,255,.025); }
 .noteIcon { width: 42px; height: 42px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 13px; background: rgba(255,255,255,.07); color: var(--accent); }
