@@ -3,21 +3,21 @@
 import PackageDescription
 
 let package = Package(
-    name: "ShelfDrop",
+    name: "DopaGak",
     platforms: [
         .macOS(.v14)
     ],
     products: [
-        .executable(name: "ShelfDrop", targets: ["ShelfDrop"])
+        .executable(name: "DopaGak", targets: ["DopaGak"])
     ],
     targets: [
         .executableTarget(
-            name: "ShelfDrop",
+            name: "DopaGak",
             path: "Sources/ShelfDrop"
         ),
         .testTarget(
-            name: "ShelfDropTests",
-            dependencies: ["ShelfDrop"],
+            name: "DopaGakTests",
+            dependencies: ["DopaGak"],
             path: "Tests/ShelfDropTests"
         )
     ]

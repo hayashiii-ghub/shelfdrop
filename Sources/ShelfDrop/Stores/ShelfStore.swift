@@ -114,6 +114,14 @@ final class ShelfStore: ObservableObject {
         }
     }
 
+    func discardLegacyManagedFiles() {
+        do {
+            try inbox.removeLegacyManagedItems()
+        } catch {
+            present(error)
+        }
+    }
+
     func open(_ item: ShelfItem) {
         switch item.kind {
         case .file, .folder, .image:

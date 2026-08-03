@@ -1,7 +1,7 @@
 import AppKit
 import Testing
 import UniformTypeIdentifiers
-@testable import ShelfDrop
+@testable import DopaGak
 
 @MainActor
 struct ShelfStoreLifecycleTests {
@@ -93,6 +93,22 @@ struct ShelfStoreLifecycleTests {
         store.discardStaleManagedFiles()
 
         #expect(!FileManager.default.fileExists(atPath: orphanURL.path))
+    }
+
+    @Test func launchCleanupRemovesLegacyShelfDropInbox() throws {
+        let fixture = try Fixture()
+        defer { fixture.cleanup() }
+        let legacyInboxURL = fixture.rootURL.appendingPathComponent("LegacyShelfDropInbox", isDirectory: true)
+        try FileManager.default.createDirectory(at: legacyInboxURL, withIntermediateDirectories: true)
+        let orphanURL = legacyInboxURL.appendingPathComponent("orphan.txt")
+        try Data("legacy".utf8).write(to: orphanURL)
+        let store = ShelfStore(
+            inbox: ShelfInbox(directoryURL: fixture.inboxURL, legacyDirectoryURL: legacyInboxURL)
+        )
+
+        store.discardLegacyManagedFiles()
+
+        #expect(!FileManager.default.fileExists(atPath: legacyInboxURL.path))
     }
 
     private func provider(

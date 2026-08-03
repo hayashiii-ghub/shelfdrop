@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import ShelfDrop
+@testable import DopaGak
 
 struct SingleInstanceGuardTests {
     @Test func onlyOneGuardCanOwnAnApplicationIdentifier() {

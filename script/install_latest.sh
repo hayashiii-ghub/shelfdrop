@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-APP_NAME="ShelfDrop"
-BUNDLE_ID="work.hayashigoto.ShelfDrop"
-ZIP_URL="https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/ShelfDrop-macos.zip"
+APP_NAME="DopaGak"
+LEGACY_APP_NAME="ShelfDrop"
+BUNDLE_ID="work.hayashigoto.dopagak"
+ZIP_URL="https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/DopaGak-macos.zip"
 TMP_DIR="$(mktemp -d)"
 ZIP_PATH="$TMP_DIR/$APP_NAME-macos.zip"
 EXTRACT_DIR="$TMP_DIR/extract"
@@ -42,6 +43,16 @@ choose_install_dir() {
   fi
 
   if [[ -d "$HOME/Applications/$APP_NAME.app" ]]; then
+    printf '%s\n' "$HOME/Applications"
+    return
+  fi
+
+  if [[ -d "/Applications/$LEGACY_APP_NAME.app" ]]; then
+    printf '%s\n' "/Applications"
+    return
+  fi
+
+  if [[ -d "$HOME/Applications/$LEGACY_APP_NAME.app" ]]; then
     printf '%s\n' "$HOME/Applications"
     return
   fi
@@ -95,7 +106,7 @@ install_app() {
   run_install ditto "$source_app" "$staged_app"
   if ! validate_app "$staged_app"; then
     run_install rm -rf "$staged_app"
-    echo "Staged ShelfDrop.app failed validation" >&2
+    echo "Staged DopaGak.app failed validation" >&2
     return 1
   fi
 
@@ -117,6 +128,7 @@ install_app() {
 
 INSTALL_DIR="$(choose_install_dir)"
 DESTINATION_APP="$INSTALL_DIR/$APP_NAME.app"
+LEGACY_DESTINATION_APP="$INSTALL_DIR/$LEGACY_APP_NAME.app"
 
 if [[ -n "${SHELFDROP_ZIP_PATH:-}" ]]; then
   echo "Using local $APP_NAME archive..."
@@ -143,6 +155,15 @@ fi
 mkdir -p "$INSTALL_DIR"
 echo "Installing to $DESTINATION_APP..."
 install_app "$SOURCE_APP" "$DESTINATION_APP"
+
+if [[ -e "$LEGACY_DESTINATION_APP" ]]; then
+  echo "Removing legacy $LEGACY_APP_NAME.app..."
+  if [[ -w "$INSTALL_DIR" ]]; then
+    rm -rf "$LEGACY_DESTINATION_APP"
+  else
+    sudo rm -rf "$LEGACY_DESTINATION_APP"
+  fi
+fi
 
 if [[ "${SHELFDROP_SKIP_OPEN:-0}" != "1" ]]; then
   open "$DESTINATION_APP"

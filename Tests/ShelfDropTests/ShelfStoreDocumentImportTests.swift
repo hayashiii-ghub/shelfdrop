@@ -1,7 +1,7 @@
 import AppKit
 import Testing
 import UniformTypeIdentifiers
-@testable import ShelfDrop
+@testable import DopaGak
 
 @MainActor
 struct ShelfStoreDocumentImportTests {

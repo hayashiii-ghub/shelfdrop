@@ -1,19 +1,21 @@
 import AppKit
+import Darwin
 import OSLog
 
 private let finderImportLogger = Logger(
-    subsystem: "work.hayashigoto.ShelfDrop",
+    subsystem: "work.hayashigoto.dopagak",
     category: "FinderImport"
 )
 
 @main
 @MainActor
-final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegate {
-    private static let bundleIdentifier = "work.hayashigoto.ShelfDrop"
-    private static let shared = ShelfDropApplication()
+final class DopaGakApplication: NSObject, NSApplicationDelegate, NSMenuDelegate {
+    private static let bundleIdentifier = "work.hayashigoto.dopagak"
+    private static let legacyBundleIdentifier = "work.hayashigoto.ShelfDrop"
+    private static let shared = DopaGakApplication()
     private static var singleInstanceGuard: SingleInstanceGuard?
     private static let latestDownloadURL = URL(
-        string: "https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/ShelfDrop-macos.zip"
+        string: "https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/DopaGak-macos.zip"
     )!
     private static let releasesURL = URL(
         string: "https://github.com/hayashiii-ghub/shelfdrop/releases/latest"
@@ -31,6 +33,18 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
     private var clearMenuItem: NSMenuItem?
 
     static func main() {
+        if let previewFlagIndex = ProcessInfo.processInfo.arguments.firstIndex(of: "--render-previews"),
+           ProcessInfo.processInfo.arguments.indices.contains(previewFlagIndex + 1) {
+            let outputURL = URL(fileURLWithPath: ProcessInfo.processInfo.arguments[previewFlagIndex + 1], isDirectory: true)
+            do {
+                try DevicePreviewRenderer.renderAll(to: outputURL)
+            } catch {
+                finderImportLogger.error("Preview rendering failed: \(error.localizedDescription, privacy: .public)")
+                Darwin.exit(1)
+            }
+            return
+        }
+
         guard let instanceGuard = SingleInstanceGuard(identifier: bundleIdentifier) else {
             activateRunningInstance()
             return
@@ -55,12 +69,18 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         let currentProcessIdentifier = ProcessInfo.processInfo.processIdentifier
         for application in NSWorkspace.shared.runningApplications where
             application.processIdentifier != currentProcessIdentifier
-            && (application.bundleIdentifier == bundleIdentifier || application.localizedName == "ShelfDrop") {
+            && (
+                application.bundleIdentifier == bundleIdentifier
+                    || application.bundleIdentifier == legacyBundleIdentifier
+                    || application.localizedName == "DopaGak"
+                    || application.localizedName == "ShelfDrop"
+            ) {
             application.terminate()
         }
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        store.discardLegacyManagedFiles()
         store.discardStaleManagedFiles()
 
         configureStatusItem()
@@ -76,6 +96,9 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         updateFinderSelectionHotKey(
             frontmostBundleIdentifier: NSWorkspace.shared.frontmostApplication?.bundleIdentifier
         )
+        if ProcessInfo.processInfo.arguments.contains("--show") {
+            shelfWindowController.showShelf()
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -98,6 +121,7 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         item.button?.image = ShelfIcon.templateImage()
         item.button?.imagePosition = .imageOnly
+        item.button?.toolTip = "Shelf menu"
 
         let menu = NSMenu()
         menu.delegate = self
@@ -116,6 +140,24 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         )
         toggleShelfItem.keyEquivalentModifierMask = [.option, .shift]
         menu.addItem(toggleShelfItem)
+        let deviceMenuItem = NSMenuItem(title: "Controls", action: nil, keyEquivalent: "")
+        let deviceMenu = NSMenu(title: "Controls")
+        let kurukuruItem = NSMenuItem(
+            title: DeviceStyle.kurukuru.userFacingName,
+            action: #selector(selectKurukuru),
+            keyEquivalent: ""
+        )
+        let pochittoItem = NSMenuItem(
+            title: DeviceStyle.pochitto.userFacingName,
+            action: #selector(selectPochitto),
+            keyEquivalent: ""
+        )
+        kurukuruItem.target = self
+        pochittoItem.target = self
+        deviceMenu.addItem(kurukuruItem)
+        deviceMenu.addItem(pochittoItem)
+        deviceMenuItem.submenu = deviceMenu
+        menu.addItem(deviceMenuItem)
         menu.addItem(
             NSMenuItem(
                 title: "Add Clipboard Text",
@@ -146,7 +188,7 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         menu.addItem(NSMenuItem(title: "Open Release Page", action: #selector(openReleasePage), keyEquivalent: ""))
 
         menu.addItem(.separator())
-        menu.addItem(NSMenuItem(title: "Quit ShelfDrop", action: #selector(quit), keyEquivalent: "q"))
+        menu.addItem(NSMenuItem(title: "Quit", action: #selector(quit), keyEquivalent: "q"))
 
         for item in menu.items where item.action != nil {
             item.target = self
@@ -160,9 +202,17 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
         shelfWindowController.toggleShelf()
     }
 
+    @objc private func selectKurukuru() {
+        shelfWindowController.selectDevice(.kurukuru)
+    }
+
+    @objc private func selectPochitto() {
+        shelfWindowController.selectDevice(.pochitto)
+    }
+
     @objc private func addClipboardText() {
         guard store.addClipboardText(NSPasteboard.general.string(forType: .string)) else { return }
-        shelfWindowController.showShelf()
+        shelfWindowController.showShelfContent()
     }
 
     @objc private func frontmostApplicationDidChange(_ notification: Notification) {
@@ -208,7 +258,7 @@ final class ShelfDropApplication: NSObject, NSApplicationDelegate, NSMenuDelegat
             }
             store.addFileURLs(urls)
             finderImportLogger.info("Added \(urls.count) Finder selection item(s)")
-            shelfWindowController.showShelf()
+            shelfWindowController.showShelfContent()
         } catch {
             finderImportLogger.error("Finder selection failed: \(error.localizedDescription, privacy: .public)")
             let alert = NSAlert(error: error)

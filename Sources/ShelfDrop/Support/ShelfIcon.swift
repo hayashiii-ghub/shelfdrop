@@ -6,12 +6,12 @@ enum ShelfIcon {
             let url = Bundle.main.url(forResource: "MenuBarTemplate", withExtension: "png"),
             let image = NSImage(contentsOf: url)
         else {
-            return NSImage(systemSymbolName: "tray", accessibilityDescription: "ShelfDrop") ?? NSImage()
+            return NSImage(systemSymbolName: "circle.grid.cross", accessibilityDescription: "Shelf menu") ?? NSImage()
         }
 
         image.isTemplate = true
         image.size = NSSize(width: 18, height: 18)
-        image.accessibilityDescription = "ShelfDrop"
+        image.accessibilityDescription = "Shelf menu"
         return image
     }
 }

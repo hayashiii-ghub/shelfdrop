@@ -2,7 +2,7 @@ import AppKit
 import Carbon.HIToolbox
 import Foundation
 import Testing
-@testable import ShelfDrop
+@testable import DopaGak
 
 @MainActor
 struct FinderSelectionImportTests {

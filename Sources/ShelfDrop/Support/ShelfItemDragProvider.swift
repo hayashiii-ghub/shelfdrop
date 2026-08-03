@@ -2,7 +2,7 @@ import AppKit
 import Foundation
 
 enum ShelfDragPayload {
-    static let typeIdentifier = "work.hayashigoto.shelfdrop.shelf-item"
+    static let typeIdentifier = "work.hayashigoto.dopagak.shelf-item"
     static let pasteboardType = NSPasteboard.PasteboardType(typeIdentifier)
 }
 

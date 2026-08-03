@@ -3,7 +3,7 @@ import Foundation
 import OSLog
 
 private let shortcutLogger = Logger(
-    subsystem: "work.hayashigoto.ShelfDrop",
+    subsystem: "work.hayashigoto.dopagak",
     category: "Shortcuts"
 )
 

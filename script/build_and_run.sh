@@ -31,6 +31,7 @@ shelfdrop_copy_bundle_resources "$ROOT_DIR" "$APP_RESOURCES"
 chmod +x "$APP_BINARY"
 
 shelfdrop_write_info_plist "$INFO_PLIST" "$APP_VERSION"
+codesign --force --sign - "$APP_BUNDLE"
 
 open_app() {
   if [[ "$#" -gt 0 ]]; then
@@ -60,8 +61,11 @@ case "$MODE" in
     sleep 1
     pgrep -x "$APP_NAME" >/dev/null
     ;;
+  --show|show)
+    open_app --show
+    ;;
   *)
-    echo "usage: $0 [run|--debug|--logs|--telemetry|--verify]" >&2
+    echo "usage: $0 [run|--debug|--logs|--telemetry|--verify|--show]" >&2
     exit 2
     ;;
 esac
