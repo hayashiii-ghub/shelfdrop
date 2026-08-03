@@ -49,8 +49,10 @@ h1 span { display: block; white-space: nowrap; }
 .mockHeader { display: flex; justify-content: space-between; align-items: center; }
 .mockBrand { display: flex; align-items: center; gap: 14px; font-size: 21px; }
 .mockBrand img { border-radius: 9px; }
-.mockControls { display: flex; gap: 12px; align-items: center; }
-.mockControls > img { width: 72px; height: 33px; border-radius: 2px; object-fit: cover; opacity: .88; }
+.mockControls { display: flex; gap: 12px; align-items: center; color: #a8aaad; }
+.controlGlyph { width: 28px; height: 36px; display: grid; place-items: center; font-family: var(--font-ibm-plex-sans-jp), sans-serif; font-weight: 400; line-height: 1; }
+.closeGlyph { font-size: 30px; }
+.collapseGlyph { font-size: 28px; transform: translateY(-3px); }
 .mockControls .count { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; font-size: 14px; background: rgba(255,255,255,.08); }
 .mockItems { margin-top: 44px; display: grid; gap: 11px; }
 .mockItems > div { min-height: 83px; padding: 0 18px; display: grid; grid-template-columns: 42px 1fr auto; align-items: center; gap: 14px; border-radius: 18px; border: 1px solid rgba(255,255,255,.08); background: rgba(0,0,0,.16); }
