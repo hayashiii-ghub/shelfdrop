@@ -1,5 +1,6 @@
 import AppKit
 import OSLog
+import QuartzCore
 import SwiftUI
 
 private let windowLogger = Logger(
@@ -8,9 +9,9 @@ private let windowLogger = Logger(
 )
 
 final class ShelfWindowController: NSObject, NSWindowDelegate {
-    private static let shelfLength: CGFloat = 256
+    private static let shelfLength: CGFloat = 230
     private static let shelfSize = NSSize(width: shelfLength, height: shelfLength)
-    private static let collapsedShelfSize = NSSize(width: shelfLength, height: 50)
+    private static let collapsedShelfSize = NSSize(width: shelfLength, height: 45)
 
     private let store: ShelfStore
     private let presentation = ShelfPresentationState()
@@ -70,8 +71,6 @@ final class ShelfWindowController: NSObject, NSWindowDelegate {
             rootView: ContentView(
                 store: store,
                 presentation: presentation,
-                expandedHeight: size.height,
-                collapsedHeight: Self.collapsedShelfSize.height,
                 onCollapseChange: { [weak self] isCollapsed in
                     self?.setShelfCollapsed(isCollapsed)
                 },
@@ -107,7 +106,16 @@ final class ShelfWindowController: NSObject, NSWindowDelegate {
         frame.size = targetSize
         frame.origin.y = topEdge - targetSize.height
 
-        panel.setFrame(frame, display: true, animate: animate)
+        guard animate else {
+            panel.setFrame(frame, display: true)
+            return
+        }
+
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.18
+            context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+            panel.animator().setFrame(frame, display: true)
+        }
     }
 
     private func positionNearPointer(_ panel: NSPanel) {
