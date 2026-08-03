@@ -110,7 +110,8 @@ private struct ShelfHeader: View {
                 Image(systemName: "xmark")
                     .font(.system(size: 11, weight: .regular))
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(.plain)
+            .focusEffectDisabled()
             .frame(width: 18, height: 20)
             .help("Hide Shelf")
 
@@ -118,7 +119,8 @@ private struct ShelfHeader: View {
                 Image(systemName: isCollapsed ? "chevron.down" : "chevron.up")
                     .font(.system(size: 11, weight: .regular))
             }
-            .buttonStyle(.borderless)
+            .buttonStyle(.plain)
+            .focusEffectDisabled()
             .frame(width: 18, height: 20)
             .help(isCollapsed ? "Expand Shelf" : "Collapse Shelf")
 
