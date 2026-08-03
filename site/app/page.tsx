@@ -72,7 +72,7 @@ export default function Home() {
                 <img src="/shelfdrop-icon.png" alt="" width="30" height="30" />
                 <strong>ShelfDrop</strong>
               </div>
-              <div className="mockControls"><span>×</span><span>⌄</span><span className="count">3</span></div>
+              <div className="mockControls"><img src="/shelfdrop-header-controls.png" alt="閉じる、折りたたむ" width="72" height="33" /><span className="count">3</span></div>
             </div>
             <div className="mockItems">
               <div><span className="fileIcon">▧</span><span><strong>proposal.pdf</strong><small>2.4 MB</small></span><em>···</em></div>

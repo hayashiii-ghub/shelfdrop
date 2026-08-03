@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Zen_Kaku_Gothic_New } from "next/font/google";
+import { IBM_Plex_Mono, IBM_Plex_Sans_JP } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
-const zenKaku = Zen_Kaku_Gothic_New({
-  variable: "--font-zen-kaku",
+const ibmPlexSansJP = IBM_Plex_Sans_JP({
+  variable: "--font-ibm-plex-sans-jp",
   subsets: ["latin"],
-  weight: ["400", "500", "700"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+const ibmPlexMono = IBM_Plex_Mono({
+  variable: "--font-ibm-plex-mono",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
   display: "swap",
 });
 
@@ -32,5 +36,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="ja"><body className={`${geistSans.variable} ${geistMono.variable} ${zenKaku.variable}`}>{children}</body></html>;
+  return <html lang="ja"><body className={`${ibmPlexSansJP.variable} ${ibmPlexMono.variable}`}>{children}</body></html>;
 }
