@@ -32,7 +32,7 @@ struct ContentView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .glassEffect(.clear, in: panelShape)
+        .glassEffect(.regular.tint(Color.black.opacity(0.18)), in: panelShape)
         .overlay {
             panelShape
                 .strokeBorder(
@@ -85,18 +85,12 @@ private struct ShelfHeader: View {
     var body: some View {
         HStack(spacing: 8) {
             ZStack(alignment: .leading) {
-                HStack(spacing: 8) {
-                    Image(nsImage: ShelfIcon.templateImage())
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 16, height: 16)
-                        .foregroundStyle(.primary)
-
-                    Text("ShelfDrop")
-                        .font(.system(size: 14, weight: .medium, design: .default))
-                        .tracking(-0.2)
-                }
-                .allowsHitTesting(false)
+                Image(nsImage: ShelfIcon.vectorTemplateImage())
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 16, height: 16)
+                    .foregroundStyle(.primary)
+                    .allowsHitTesting(false)
 
                 WindowDragHandle()
                     .frame(width: 97, height: 27)
@@ -139,19 +133,12 @@ private struct ShelfHeader: View {
 
 private struct EmptyShelfView: View {
     var body: some View {
-        VStack(spacing: 8) {
-            Image(systemName: "tray.and.arrow.down")
-                .font(.system(size: 22, weight: .regular))
-                .symbolRenderingMode(.monochrome)
-                .foregroundStyle(.secondary)
-
-            Text("Drop links, images, or text here.")
-                .font(.system(size: 12, weight: .regular, design: .default))
-                .tracking(0.05)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-        }
-        .padding(.horizontal, 22)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        Text("Drop here.")
+            .font(.system(size: 12, weight: .regular, design: .default))
+            .tracking(0.05)
+            .foregroundStyle(.secondary)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 22)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

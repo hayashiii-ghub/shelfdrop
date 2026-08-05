@@ -10,6 +10,7 @@ shelfdrop_copy_bundle_resources() {
 
   cp "$root_dir/Assets/ShelfDrop.icns" "$resources_dir/ShelfDrop.icns"
   cp "$root_dir/Assets/MenuBarTemplate.png" "$resources_dir/MenuBarTemplate.png"
+  cp "$root_dir/Assets/MenuBarTemplate.svg" "$resources_dir/MenuBarTemplate.svg"
 }
 
 shelfdrop_write_info_plist() {
