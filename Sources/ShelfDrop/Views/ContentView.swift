@@ -40,6 +40,8 @@ struct ContentView: View {
                     lineWidth: 1.5
                 )
         }
+        .compositingGroup()
+        .clipShape(panelShape)
         .onDrop(of: ShelfStore.acceptedTypeIdentifiers, isTargeted: $isDropTargeted) { providers in
             guard !presentation.isCollapsed else { return false }
             return store.handleDrop(providers: providers)
