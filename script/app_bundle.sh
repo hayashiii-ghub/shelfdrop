@@ -8,7 +8,7 @@ shelfdrop_copy_bundle_resources() {
   local root_dir="$1"
   local resources_dir="$2"
 
-  cp "$root_dir/Assets/ShelfDrop.icns" "$resources_dir/ShelfDrop.icns"
+  cp "$root_dir/Assets/ShelfDrop.icns" "$resources_dir/ShelfDrop-v2.icns"
   cp "$root_dir/Assets/MenuBarTemplate.png" "$resources_dir/MenuBarTemplate.png"
   cp "$root_dir/Assets/MenuBarTemplate.svg" "$resources_dir/MenuBarTemplate.svg"
 }
@@ -29,7 +29,7 @@ shelfdrop_write_info_plist() {
   <key>CFBundleName</key>
   <string>$SHELFDROP_APP_NAME</string>
   <key>CFBundleIconFile</key>
-  <string>ShelfDrop.icns</string>
+  <string>ShelfDrop-v2.icns</string>
   <key>CFBundleShortVersionString</key>
   <string>$app_version</string>
   <key>CFBundleVersion</key>
