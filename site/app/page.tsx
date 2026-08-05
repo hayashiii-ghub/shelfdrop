@@ -34,6 +34,12 @@ const steps = [
   ["取り出す", "必要な場所へ、ひとつずつでもまとめてでもドラッグします。"],
 ];
 
+const details = [
+  ["⌥ ⇥", "Finderの選択項目を追加"],
+  ["⌥ ⇧ ⇥", "シェルフを表示・非表示"],
+  ["DRAG", "ヘッダーをつかんで移動"],
+];
+
 export default function Home() {
   return (
     <main>
@@ -61,7 +67,7 @@ export default function Home() {
             <a className="button primary" href={downloadUrl}>最新版をダウンロード <span>↘</span></a>
             <a className="button secondary" href="https://github.com/hayashiii-ghub/shelfdrop">GitHubで見る</a>
           </div>
-          <p className="requirements">macOS 26以降 · Apple Silicon / Intel · 無料・オープンソース</p>
+          <p className="requirements"><span>v0.5.1</span> macOS 26以降 · Apple Silicon / Intel · 無料・オープンソース</p>
         </div>
 
         <div className="productStage" aria-label="ShelfDropのアプリ画面イメージ">
@@ -69,13 +75,11 @@ export default function Home() {
           <div className="orb orbTwo" />
           <div className="shelfMock glass">
             <div className="mockHeader">
-              <div className="mockBrand">
-                <strong>ShelfDrop</strong>
-              </div>
+              <span className="mockCount">3</span>
+              <span className="mockDragArea">drag to move</span>
               <div className="mockControls" aria-hidden="true">
                 <span className="controlGlyph closeGlyph">×</span>
-                <span className="controlGlyph collapseGlyph">⌄</span>
-                <span className="count">3</span>
+                <span className="controlGlyph collapseGlyph">⌃</span>
               </div>
             </div>
             <div className="mockItems">
@@ -91,9 +95,9 @@ export default function Home() {
 
       <section className="statement">
         <div className="shell statementInner">
-          <p>移動先を開くまで。</p><span />
-          <p>送信する瞬間まで。</p><span />
-          <p>あとで使う、その時まで。</p>
+          {details.map(([key, label]) => (
+            <div className="quickDetail" key={key}><strong>{key}</strong><p>{label}</p></div>
+          ))}
         </div>
       </section>
 
@@ -147,6 +151,7 @@ export default function Home() {
               <li><span>2</span>ShelfDropをApplicationsへドラッグ</li>
               <li><span>3</span>Applicationsから起動</li>
             </ol>
+            <p className="microcopy">初回起動時にmacOSの確認が表示される場合があります。</p>
             <a className="button primary full" href={downloadUrl}>ShelfDropをダウンロード <span>↘</span></a>
           </article>
           <article className="installCard glass">

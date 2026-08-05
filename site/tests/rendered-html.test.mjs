@@ -22,7 +22,9 @@ test("ShelfDropのランディングページをサーバーレンダリング�
   assert.match(html, /<html lang="ja">/);
   assert.match(html, /<title>ShelfDrop — 作業中のもの、いったんここへ。<\/title>/);
   assert.match(html, /最新版をダウンロード/);
+  assert.match(html, /v0\.5\.1/);
   assert.match(html, /Option \+ Tab/);
+  assert.match(html, /ヘッダーをつかんで移動/);
   assert.match(html, /DMGからインストール/);
   assert.match(html, /コマンドで導入・更新/);
   assert.match(html, /Download Latest Version/);

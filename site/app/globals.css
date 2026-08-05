@@ -37,6 +37,7 @@ h1 span { display: block; white-space: nowrap; }
 .button.primary { background: var(--ink); color: #111; }
 .button.secondary { border: 1px solid var(--line); background: rgba(255,255,255,.05); color: var(--ink); }
 .requirements { margin: 20px 0 0; color: var(--faint); font-size: 11px; letter-spacing: .025em; }
+.requirements span { display: inline-flex; margin-right: 9px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); font: 500 10px var(--font-ibm-plex-mono); letter-spacing: 0; }
 
 .productStage { height: 610px; display: grid; place-items: center; position: relative; isolation: isolate; }
 .productStage::before { content: ""; position: absolute; width: min(520px, 100%); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgba(229,244,197,.14), rgba(88,113,125,.06) 45%, transparent 70%); filter: blur(10px); }
@@ -45,13 +46,14 @@ h1 span { display: block; white-space: nowrap; }
 .orbTwo { width: 230px; height: 230px; left: 8%; bottom: 8%; background: #62694c; filter: blur(95px); }
 .shelfMock { width: min(510px, 92%); min-height: 500px; border-radius: 44px; padding: 30px 32px 22px; overflow: hidden; background: linear-gradient(150deg, rgba(255,255,255,.14), rgba(36,38,39,.63) 45%, rgba(255,255,255,.05)); transform: perspective(1100px) rotateY(-5deg) rotateX(2deg); }
 .shelfMock::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(120deg, rgba(255,255,255,.13), transparent 28%, transparent 70%, rgba(255,255,255,.05)); pointer-events: none; }
-.mockHeader { display: flex; justify-content: space-between; align-items: center; }
-.mockBrand { display: flex; align-items: center; gap: 14px; font-size: 21px; }
+.mockHeader { height: 36px; display: flex; align-items: center; gap: 8px; }
+.mockCount { min-width: 24px; padding-left: 3px; color: #ededeb; font: 400 16px var(--font-ibm-plex-mono); }
+.mockDragArea { align-self: stretch; flex: 1; display: flex; align-items: center; color: rgba(255,255,255,.28); font: 500 9px var(--font-ibm-plex-mono); letter-spacing: .12em; text-transform: uppercase; opacity: 0; transition: opacity .2s ease; }
+.shelfMock:hover .mockDragArea { opacity: 1; }
 .mockControls { display: flex; gap: 12px; align-items: center; color: #a8aaad; }
-.controlGlyph { width: 28px; height: 36px; display: grid; place-items: center; font-family: var(--font-ibm-plex-sans-jp), sans-serif; font-weight: 400; line-height: 1; }
-.closeGlyph { font-size: 30px; }
-.collapseGlyph { font-size: 28px; transform: translateY(-3px); }
-.mockControls .count { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; font-size: 14px; background: rgba(255,255,255,.08); }
+.controlGlyph { width: 28px; height: 28px; display: grid; place-items: center; font-family: var(--font-ibm-plex-sans-jp), sans-serif; font-weight: 400; line-height: 1; }
+.closeGlyph { font-size: 24px; }
+.collapseGlyph { font-size: 22px; transform: translateY(2px); }
 .mockItems { margin-top: 44px; display: grid; gap: 11px; }
 .mockItems > div { min-height: 83px; padding: 0 18px; display: grid; grid-template-columns: 42px 1fr auto; align-items: center; gap: 14px; border-radius: 18px; border: 1px solid rgba(255,255,255,.08); background: rgba(0,0,0,.16); }
 .mockItems strong, .mockItems small { display: block; }
@@ -65,8 +67,10 @@ h1 span { display: block; white-space: nowrap; }
 .shortcutChip p { margin: 0 0 0 6px; color: var(--muted); font-size: 12px; }
 
 .statement { border-block: 1px solid rgba(255,255,255,.08); background: #0e0f10; }
-.statementInner { min-height: 92px; display: flex; align-items: center; justify-content: center; gap: 24px; color: #b7b7b3; font-size: 13px; }
-.statementInner span { width: 3px; height: 3px; border-radius: 50%; background: #555; }
+.statementInner { min-height: 102px; display: grid; grid-template-columns: repeat(3, 1fr); align-items: center; gap: 28px; color: #b7b7b3; }
+.quickDetail { display: flex; align-items: center; justify-content: center; gap: 14px; }
+.quickDetail strong { color: var(--accent); font: 500 10px var(--font-ibm-plex-mono); letter-spacing: .08em; white-space: nowrap; }
+.quickDetail p { margin: 0; font-size: 12px; }
 
 .section { padding-block: 150px; }
 .sectionIntro { max-width: 610px; }
@@ -110,6 +114,7 @@ h1 span { display: block; white-space: nowrap; }
 .copyCommand:active { transform: scale(.97); }
 .copyCommand:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .installCard .microcopy { margin-top: auto; font-size: 12px; color: var(--faint); }
+.installCard.featured .microcopy { margin: auto 0 22px; }
 .permissionNote { max-width: 900px; margin: 38px auto 0; display: flex; gap: 18px; align-items: center; padding: 22px 26px; border: 1px solid rgba(255,255,255,.08); border-radius: 20px; background: rgba(255,255,255,.025); }
 .noteIcon { width: 42px; height: 42px; display: grid; place-items: center; flex: 0 0 auto; border-radius: 13px; background: rgba(255,255,255,.07); color: var(--accent); }
 .permissionNote strong { font-size: 13px; }
@@ -165,9 +170,9 @@ h1 span { display: block; white-space: nowrap; }
   .mockItems > div { min-height: 70px; }
   .shortcutChip { right: -5px; bottom: 4px; }
   .shortcutChip p { display: none; }
-  .statementInner { min-height: 110px; flex-wrap: wrap; gap: 12px; padding-block: 22px; }
-  .statementInner span { display: none; }
-  .statementInner p { width: 100%; margin: 0; text-align: center; }
+  .statementInner { grid-template-columns: 1fr; gap: 14px; padding-block: 25px; }
+  .quickDetail { justify-content: flex-start; }
+  .quickDetail strong { width: 54px; text-align: right; }
   .section { padding-block: 105px; }
   .sectionIntro h2, .updatePanel h2 { font-size: 39px; }
   .useCard { min-height: 230px; }
