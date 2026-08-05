@@ -104,31 +104,29 @@ private struct ShelfHeader: View {
                     .allowsHitTesting(false)
 
                 WindowDragHandle()
-                    .frame(width: 97, height: 27)
             }
-            .frame(width: 97, height: 27, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 27, maxHeight: 27, alignment: .leading)
             .help("Drag to move")
-
-            Spacer()
 
             Button(action: onDismiss) {
                 Image(systemName: "xmark")
                     .font(.system(size: 11, weight: .regular))
+                    .frame(width: 24, height: 24)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .focusEffectDisabled()
-            .frame(width: 18, height: 20)
             .help("Hide Shelf")
 
             Button(action: onToggleCollapsed) {
                 Image(systemName: isCollapsed ? "chevron.down" : "chevron.up")
                     .font(.system(size: 11, weight: .regular))
+                    .frame(width: 24, height: 24)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .focusEffectDisabled()
-            .frame(width: 18, height: 20)
             .help(isCollapsed ? "Expand Shelf" : "Collapse Shelf")
-
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 9)
