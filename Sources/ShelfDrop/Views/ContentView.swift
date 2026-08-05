@@ -87,11 +87,20 @@ private struct ShelfHeader: View {
     var body: some View {
         HStack(spacing: 8) {
             ZStack(alignment: .leading) {
-                Image(nsImage: ShelfIcon.vectorTemplateImage())
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 16, height: 16)
-                    .foregroundStyle(.primary)
+                Group {
+                    if count == 0 {
+                        Image(nsImage: ShelfIcon.vectorTemplateImage())
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 15, height: 15)
+                            .foregroundStyle(.primary)
+                    } else {
+                        Text("\(count)")
+                            .font(.system(size: 13, weight: .regular, design: .monospaced))
+                            .foregroundStyle(.primary)
+                    }
+                }
+                    .padding(.leading, 3)
                     .allowsHitTesting(false)
 
                 WindowDragHandle()
@@ -120,16 +129,9 @@ private struct ShelfHeader: View {
             .frame(width: 18, height: 20)
             .help(isCollapsed ? "Expand Shelf" : "Collapse Shelf")
 
-            Text("\(count)")
-                .font(.system(size: 10, weight: .regular, design: .monospaced))
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 7)
-                .padding(.vertical, 4)
-                .glassEffect(.clear, in: Capsule())
         }
         .padding(.horizontal, 12)
-        .padding(.top, 10)
-        .padding(.bottom, 8)
+        .padding(.vertical, 9)
     }
 }
 

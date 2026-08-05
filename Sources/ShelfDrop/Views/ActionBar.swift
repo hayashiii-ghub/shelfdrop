@@ -2,6 +2,12 @@ import SwiftUI
 
 struct ActionBar: View {
     @ObservedObject var store: ShelfStore
+    @State private var clipboardText: String?
+
+    init(store: ShelfStore) {
+        self.store = store
+        _clipboardText = State(initialValue: NSPasteboard.general.string(forType: .string))
+    }
 
     var body: some View {
         HStack(spacing: 6) {
@@ -12,9 +18,10 @@ struct ActionBar: View {
             .disabled(store.items.isEmpty || store.isExporting)
 
             actionButton("clipboard", help: "Add Clipboard Text") {
-                store.addClipboardText(NSPasteboard.general.string(forType: .string))
+                store.addClipboardText(clipboardText)
             }
-            .disabled(store.isExporting)
+            .font(.system(size: 12, weight: .regular))
+            .disabled(!canAddClipboardText || store.isExporting)
 
             Button {
                 store.copyItemsToChosenFolder()
@@ -51,6 +58,20 @@ struct ActionBar: View {
         .symbolRenderingMode(.monochrome)
         .padding(.horizontal, 12)
         .padding(.bottom, 12)
+        .task {
+            while !Task.isCancelled {
+                clipboardText = NSPasteboard.general.string(forType: .string)
+                try? await Task.sleep(for: .milliseconds(500))
+            }
+        }
+    }
+
+    private var canAddClipboardText: Bool {
+        guard let clipboardText,
+              !clipboardText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return false
+        }
+        return !store.items.contains { $0.kind == .text && $0.text == clipboardText }
     }
 
     private func actionButton(
