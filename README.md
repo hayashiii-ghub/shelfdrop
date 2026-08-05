@@ -13,15 +13,12 @@
   <a href="https://github.com/hayashiii-ghub/shelfdrop/actions/workflows/ci.yml"><img src="https://github.com/hayashiii-ghub/shelfdrop/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
   <img src="https://img.shields.io/badge/macOS-26%2B-black" alt="macOS 26 or later">
   <img src="https://img.shields.io/badge/Swift-5.9%2B-F05138" alt="Swift 5.9 or later">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License"></a>
 </p>
 
 <p align="center">
   <a href="https://shelfdrop.haygsiiii.chatgpt.site"><strong>Webサイト</strong></a>
   ・
   <a href="https://github.com/hayashiii-ghub/shelfdrop/releases/latest/download/ShelfDrop-macos.dmg"><strong>最新版をダウンロード</strong></a>
-  ・
-  <a href="https://github.com/hayashiii-ghub/shelfdrop/issues">Issue</a>
 </p>
 
 ## ShelfDropとは
@@ -127,13 +124,3 @@ Tests/ShelfDropTests/ テスト
 Assets/               アプリ・メニューバーアイコン
 script/               ビルド、配布、更新スクリプト
 ```
-
-## コントリビューション
-
-バグ報告と機能提案は[Issues](https://github.com/hayashiii-ghub/shelfdrop/issues)から受け付けています。Pull Requestを送る前に[CONTRIBUTING.md](CONTRIBUTING.md)を確認してください。
-
-セキュリティ上の問題は公開Issueへ詳細を書かず、[SECURITY.md](SECURITY.md)の手順で報告してください。
-
-## ライセンス
-
-[MIT License](LICENSE)
