@@ -21,7 +21,7 @@ enum ShelfIcon {
         }
 
         image.isTemplate = true
-        image.size = NSSize(width: 18, height: 18)
+        image.size = NSSize(width: 16, height: 16)
         image.accessibilityDescription = "ShelfDrop"
         return image
     }
