@@ -59,14 +59,14 @@ private final class MultiFileDragSourceView: NSImageView, NSDraggingSource {
         super.init(frame: .zero)
 
         let symbol = NSImage(
-            systemSymbolName: "square.and.arrow.up.on.square",
+            systemSymbolName: "hand.draw",
             accessibilityDescription: "Drag All Files"
         )
         image = symbol?.withSymbolConfiguration(
-            NSImage.SymbolConfiguration(pointSize: 13, weight: .regular)
+            NSImage.SymbolConfiguration(pointSize: 14, weight: .regular)
         )
         imageScaling = .scaleProportionallyDown
-        contentTintColor = .secondaryLabelColor
+        contentTintColor = .labelColor
         updateState()
     }
 
